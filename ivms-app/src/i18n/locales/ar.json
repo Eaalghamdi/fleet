@@ -362,7 +362,10 @@
     "itemDeleted": "تم حذف الصنف",
     "orderPlaced": "تم طلب {{quantity}} وحدة",
     "newInventoryOrder": "طلب مخزون جديد",
-    "orderMessage": "تم طلب {{quantity}} وحدة"
+    "orderMessage": "تم طلب {{quantity}} وحدة",
+    "driverAdded": "تم تسجيل السائق بنجاح",
+    "driverUpdated": "تم تحديث بيانات السائق",
+    "driverDeleted": "تم حذف السائق"
   },
   "modals": {
     "vehicle": {
@@ -771,6 +774,9 @@
       "maxImages": "الحد الأقصى 6 صور",
       "selectCar": "اختر سيارة (اختياري)",
       "anyAvailable": "أي سيارة متاحة",
+      "selectDriver": "اختر السائق",
+      "chooseDriver": "اختر سائق",
+      "noDriversAvailable": "لا يوجد سائقين مسجلين. يرجى تسجيل سائق أولاً.",
       "submitRequest": "إرسال الطلب",
       "updateRequest": "تحديث الطلب",
       "requestCreated": "تم إنشاء طلب المركبة بنجاح",
@@ -1158,6 +1164,50 @@
       "userActivated": "تم تفعيل المستخدم بنجاح",
       "userDeactivated": "تم تعطيل المستخدم بنجاح",
       "deleteConfirmation": "هل أنت متأكد من حذف المستخدم \"{{name}}\"؟ لا يمكن التراجع عن هذا الإجراء."
+    },
+    "drivers": {
+      "drivers": "السائقين",
+      "driversList": "قائمة السائقين",
+      "manageDrivers": "إدارة وتسجيل السائقين",
+      "totalDrivers": "إجمالي السائقين",
+      "activeDrivers": "السائقين النشطين",
+      "registered": "مسجل",
+      "currentlyActive": "نشط حالياً",
+      "registerDriver": "تسجيل سائق",
+      "registerNewDriver": "تسجيل سائق جديد",
+      "addNewDriver": "إضافة سائق جديد للنظام",
+      "editDriver": "تعديل السائق",
+      "deleteDriver": "حذف السائق",
+      "driverDeleted": "تم حذف السائق بنجاح",
+      "driverUpdated": "تم تحديث بيانات السائق بنجاح",
+      "driverRegistered": "تم تسجيل السائق بنجاح",
+      "updateDriver": "تحديث السائق",
+      "driverId": "رقم السائق",
+      "driverName": "اسم السائق",
+      "driverNamePlaceholder": "أدخل الاسم الكامل للسائق",
+      "nationalId": "رقم الهوية",
+      "nationalIdPlaceholder": "أدخل رقم الهوية/الإقامة",
+      "nationality": "الجنسية",
+      "selectNationality": "اختر الجنسية",
+      "occupation": "المهنة",
+      "occupationPlaceholder": "مثال: سائق مركبات ثقيلة",
+      "searchPlaceholder": "البحث بالاسم أو الهوية أو الجنسية...",
+      "noDrivers": "لا يوجد سائقين مسجلين",
+      "noSearchResults": "لم يتم العثور على نتائج",
+      "startByRegistering": "ابدأ بتسجيل سائق جديد",
+      "deleteConfirmation": "هل أنت متأكد من حذف السائق \"{{name}}\"؟ لا يمكن التراجع عن هذا الإجراء.",
+      "nationalities": {
+        "saudi": "سعودي",
+        "egyptian": "مصري",
+        "pakistani": "باكستاني",
+        "indian": "هندي",
+        "bangladeshi": "بنغلاديشي",
+        "yemeni": "يمني",
+        "sudanese": "سوداني",
+        "filipino": "فلبيني",
+        "indonesian": "إندونيسي",
+        "other": "أخرى"
+      }
     }
   }
 }

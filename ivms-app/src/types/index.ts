@@ -70,6 +70,7 @@ export interface CarRequest {
   id: string;
   requestedCarType: CarType;
   requestedCarId: string | null;
+  driverId: string | null;
   isRental: boolean;
   rentalCompanyId: string | null;
   rentalCompanyName: string | null;
@@ -100,4 +101,15 @@ export interface Toast {
   id: string;
   message: string;
   type: 'success' | 'error' | 'warning' | 'info';
+}
+
+export interface Driver {
+  id: string;
+  name: string;
+  nationalId: string;
+  nationality: string;
+  occupation: string;
+  status: 'active' | 'inactive';
+  createdAt: string;
+  updatedAt: string;
 }

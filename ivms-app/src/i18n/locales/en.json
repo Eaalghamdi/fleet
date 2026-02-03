@@ -362,7 +362,10 @@
     "itemDeleted": "Item deleted",
     "orderPlaced": "{{quantity}} units ordered",
     "newInventoryOrder": "New inventory order",
-    "orderMessage": "{{quantity}} units ordered"
+    "orderMessage": "{{quantity}} units ordered",
+    "driverAdded": "Driver registered successfully",
+    "driverUpdated": "Driver data updated",
+    "driverDeleted": "Driver deleted"
   },
   "modals": {
     "vehicle": {
@@ -771,6 +774,9 @@
       "maxImages": "Maximum 6 images allowed",
       "selectCar": "Select Car (Optional)",
       "anyAvailable": "Any Available",
+      "selectDriver": "Select Driver",
+      "chooseDriver": "Choose a driver",
+      "noDriversAvailable": "No drivers registered. Please register a driver first.",
       "submitRequest": "Submit Request",
       "updateRequest": "Update Request",
       "requestCreated": "Car request created successfully",
@@ -1158,6 +1164,50 @@
       "userActivated": "User activated successfully",
       "userDeactivated": "User deactivated successfully",
       "deleteConfirmation": "Are you sure you want to delete user \"{{name}}\"? This action cannot be undone."
+    },
+    "drivers": {
+      "drivers": "Drivers",
+      "driversList": "Drivers List",
+      "manageDrivers": "Manage and register drivers",
+      "totalDrivers": "Total Drivers",
+      "activeDrivers": "Active Drivers",
+      "registered": "Registered",
+      "currentlyActive": "Currently active",
+      "registerDriver": "Register Driver",
+      "registerNewDriver": "Register New Driver",
+      "addNewDriver": "Add a new driver to the system",
+      "editDriver": "Edit Driver",
+      "deleteDriver": "Delete Driver",
+      "driverDeleted": "Driver deleted successfully",
+      "driverUpdated": "Driver updated successfully",
+      "driverRegistered": "Driver registered successfully",
+      "updateDriver": "Update Driver",
+      "driverId": "Driver ID",
+      "driverName": "Driver Name",
+      "driverNamePlaceholder": "Enter driver's full name",
+      "nationalId": "ID Number",
+      "nationalIdPlaceholder": "Enter ID/Iqama number",
+      "nationality": "Nationality",
+      "selectNationality": "Select nationality",
+      "occupation": "Occupation",
+      "occupationPlaceholder": "e.g., Heavy Vehicle Driver",
+      "searchPlaceholder": "Search by name, ID, or nationality...",
+      "noDrivers": "No drivers registered",
+      "noSearchResults": "No results found",
+      "startByRegistering": "Start by registering a new driver",
+      "deleteConfirmation": "Are you sure you want to delete driver \"{{name}}\"? This action cannot be undone.",
+      "nationalities": {
+        "saudi": "Saudi",
+        "egyptian": "Egyptian",
+        "pakistani": "Pakistani",
+        "indian": "Indian",
+        "bangladeshi": "Bangladeshi",
+        "yemeni": "Yemeni",
+        "sudanese": "Sudanese",
+        "filipino": "Filipino",
+        "indonesian": "Indonesian",
+        "other": "Other"
+      }
     }
   }
 }
