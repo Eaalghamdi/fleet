@@ -622,7 +622,18 @@
       "theOperations": "Operations",
       "theMaintenance": "Maintenance",
       "minutesAgo": "{{count}} minutes ago",
-      "hourAgo": "1 hour ago"
+      "hourAgo": "1 hour ago",
+      "requestId": "Request ID",
+      "requester": "Requester",
+      "department": "Department",
+      "item": "Item",
+      "vehicleBrand": "Vehicle Brand",
+      "requestDetails": "Request Details",
+      "selectedCount": "{{count}} selected",
+      "approveSelected": "Approve Selected",
+      "rejectSelected": "Reject Selected",
+      "bulkApproved": "{{count}} requests approved",
+      "bulkRejected": "{{count}} requests rejected"
     },
     "operation": {
       "title": "Operations Dashboard",
@@ -912,6 +923,21 @@
       "title": "Access Denied",
       "description": "You don't have permission to access this page. Please contact your administrator if you believe this is an error.",
       "goBack": "Go Back"
+    },
+    "requestLog": {
+      "title": "Request Log",
+      "description": "View and track all car request history",
+      "downloadLog": "Download Request Log",
+      "totalRequests": "Total Requests",
+      "completed": "Completed",
+      "cancelled": "Cancelled",
+      "completionRate": "Completion Rate",
+      "requestHistory": "Request History",
+      "requester": "Requester",
+      "cancelledStatus": "Cancelled",
+      "noRequests": "No requests",
+      "noRequestHistory": "No request history available",
+      "logDownloaded": "Request log downloaded successfully"
     }
   }
 }

@@ -622,7 +622,18 @@
       "theOperations": "العمليات",
       "theMaintenance": "الصيانة",
       "minutesAgo": "منذ {{count}} دقائق",
-      "hourAgo": "منذ ساعة"
+      "hourAgo": "منذ ساعة",
+      "requestId": "رقم الطلب",
+      "requester": "مقدم الطلب",
+      "department": "القسم",
+      "item": "الصنف",
+      "vehicleBrand": "نوع المركبة",
+      "requestDetails": "تفاصيل الطلب",
+      "selectedCount": "تم تحديد {{count}}",
+      "approveSelected": "موافقة على المحدد",
+      "rejectSelected": "رفض المحدد",
+      "bulkApproved": "تمت الموافقة على {{count}} طلبات",
+      "bulkRejected": "تم رفض {{count}} طلبات"
     },
     "operation": {
       "title": "لوحة تحكم العمليات",
@@ -912,6 +923,21 @@
       "title": "غير مصرح",
       "description": "ليس لديك صلاحية للوصول إلى هذه الصفحة. يرجى التواصل مع المسؤول إذا كنت تعتقد أن هذا خطأ.",
       "goBack": "رجوع"
+    },
+    "requestLog": {
+      "title": "سجل الطلبات",
+      "description": "عرض ومتابعة سجل جميع طلبات المركبات",
+      "downloadLog": "تحميل سجل الطلبات",
+      "totalRequests": "إجمالي الطلبات",
+      "completed": "مكتملة",
+      "cancelled": "ملغاة",
+      "completionRate": "نسبة الإنجاز",
+      "requestHistory": "سجل الطلبات",
+      "requester": "مقدم الطلب",
+      "cancelledStatus": "ملغي",
+      "noRequests": "لا توجد طلبات",
+      "noRequestHistory": "لا يوجد سجل طلبات",
+      "logDownloaded": "تم تحميل سجل الطلبات بنجاح"
     }
   }
 }
