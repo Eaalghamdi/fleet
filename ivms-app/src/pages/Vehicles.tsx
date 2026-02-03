@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Search, Plus, Car, MapPin, MoreVertical, Eye, Pencil, Trash2, FileDown } from 'lucide-react';
+import { useState, useMemo } from 'react';
+import { Search, Plus, Car, MoreVertical, Eye, Pencil, Trash2, FileDown, Filter } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Badge, Dropdown, ConfirmDialog, Modal } from '../components/ui';
 import { VehicleModal } from '../components/modals/VehicleModal';
@@ -10,6 +10,8 @@ export function Vehicles() {
   const { t } = useTranslation();
   const { vehicles, addVehicle, updateVehicle, deleteVehicle } = useApp();
   const [searchTerm, setSearchTerm] = useState('');
+  const [modelFilter, setModelFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<string>('all');
 
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -17,12 +19,21 @@ export function Vehicles() {
   const [viewingVehicle, setViewingVehicle] = useState<Vehicle | null>(null);
   const [deletingVehicle, setDeletingVehicle] = useState<Vehicle | null>(null);
 
-  const filteredVehicles = vehicles.filter(
-    (v) =>
+  // Get unique models from vehicles
+  const uniqueModels = useMemo(() => {
+    const models = new Set(vehicles.map(v => v.model));
+    return Array.from(models).sort();
+  }, [vehicles]);
+
+  const filteredVehicles = vehicles.filter((v) => {
+    const matchesSearch =
       v.plate.includes(searchTerm) ||
       v.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      v.driver.includes(searchTerm)
-  );
+      v.driver.includes(searchTerm);
+    const matchesModel = modelFilter === 'all' || v.model === modelFilter;
+    const matchesStatus = statusFilter === 'all' || v.status === statusFilter;
+    return matchesSearch && matchesModel && matchesStatus;
+  });
 
   const handleAdd = (data: Omit<Vehicle, 'id'>) => {
     addVehicle(data);
@@ -67,6 +78,17 @@ export function Vehicles() {
     link.click();
   };
 
+  const getTranslatedStatus = (status: string) => {
+    switch (status) {
+      case 'نشط':
+        return t('dashboards.garage.statusActive');
+      case 'صيانة':
+        return t('dashboards.garage.statusMaintenance');
+      default:
+        return t('dashboards.garage.statusInactive');
+    }
+  };
+
   const getDropdownItems = (vehicle: Vehicle) => [
     {
       label: t('pages.vehicles.viewDetails'),
@@ -98,34 +120,71 @@ export function Vehicles() {
 
       {/* Table Card */}
       <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
-        {/* Search and Actions */}
-        <div className="p-4 sm:p-6 border-b border-gray-50 flex flex-col md:flex-row justify-between gap-4">
-          <div className="relative flex-1">
-            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-              <Search size={18} />
+        {/* Search, Filters, and Actions */}
+        <div className="p-4 sm:p-6 border-b border-gray-50 space-y-4">
+          <div className="flex flex-col md:flex-row justify-between gap-4">
+            <div className="relative flex-1">
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <Search size={18} />
+              </div>
+              <input
+                type="text"
+                placeholder={t('pages.vehicles.searchPlaceholder')}
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pr-10 pl-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+              />
             </div>
-            <input
-              type="text"
-              placeholder={t('pages.vehicles.searchPlaceholder')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pr-10 pl-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
-            />
+            <div className="flex gap-2">
+              <button
+                onClick={handleExportExcel}
+                className="hidden sm:flex px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 items-center gap-2"
+              >
+                <FileDown size={16} />
+                {t('pages.vehicles.exportExcel')}
+              </button>
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="flex-1 sm:flex-none px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/30"
+              >
+                <Plus size={18} /> {t('pages.vehicles.addVehicle')}
+              </button>
+            </div>
           </div>
-          <div className="flex gap-2">
-            <button
-              onClick={handleExportExcel}
-              className="hidden sm:flex px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 items-center gap-2"
-            >
-              <FileDown size={16} />
-              {t('pages.vehicles.exportExcel')}
-            </button>
-            <button
-              onClick={() => setIsAddModalOpen(true)}
-              className="flex-1 sm:flex-none px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/30"
-            >
-              <Plus size={18} /> {t('pages.vehicles.addVehicle')}
-            </button>
+
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Filter size={16} />
+              <span>{t('common.filter')}:</span>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {/* Model Filter */}
+              <select
+                value={modelFilter}
+                onChange={(e) => setModelFilter(e.target.value)}
+                className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all min-w-[140px]"
+              >
+                <option value="all">{t('pages.vehicles.allModels')}</option>
+                {uniqueModels.map((model) => (
+                  <option key={model} value={model}>
+                    {model}
+                  </option>
+                ))}
+              </select>
+
+              {/* Status Filter */}
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all min-w-[140px]"
+              >
+                <option value="all">{t('pages.vehicles.allStatuses')}</option>
+                <option value="نشط">{t('dashboards.garage.statusActive')}</option>
+                <option value="صيانة">{t('dashboards.garage.statusMaintenance')}</option>
+                <option value="متوقف">{t('dashboards.garage.statusInactive')}</option>
+              </select>
+            </div>
           </div>
         </div>
 
@@ -151,58 +210,36 @@ export function Vehicles() {
         {/* Desktop Table */}
         {filteredVehicles.length > 0 && (
           <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-right">
-              <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
-                <tr>
-                  <th className="px-6 py-4 font-bold">{t('pages.vehicles.vehicleAndPlate')}</th>
-                  <th className="px-6 py-4 font-bold">{t('pages.vehicles.currentDriver')}</th>
-                  <th className="px-6 py-4 font-bold">{t('pages.vehicles.liveLocation')}</th>
-                  <th className="px-6 py-4 font-bold">{t('pages.vehicles.fuelLevel')}</th>
-                  <th className="px-6 py-4 font-bold">{t('pages.vehicles.status')}</th>
-                  <th className="px-6 py-4 font-bold"></th>
+            <table className="w-full rtl:text-right ltr:text-left">
+              <thead>
+                <tr className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 bg-slate-50/30">
+                  <th className="px-6 py-4">{t('dashboards.garage.theVehicle')}</th>
+                  <th className="px-6 py-4">{t('dashboards.garage.plate')}</th>
+                  <th className="px-6 py-4">{t('dashboards.garage.year')}</th>
+                  <th className="px-6 py-4">{t('dashboards.garage.mileage')}</th>
+                  <th className="px-6 py-4">{t('dashboards.garage.status')}</th>
+                  <th className="px-6 py-4"></th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-gray-100">
+              <tbody className="divide-y divide-slate-50">
                 {filteredVehicles.map((v) => (
-                  <tr key={v.id} className="hover:bg-emerald-50/30 transition-colors">
+                  <tr key={v.id} className="hover:bg-slate-50/50 transition-colors">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500">
+                        <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-500">
                           <Car size={20} />
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-gray-800">{v.plate}</p>
-                          <p className="text-xs text-gray-500">
-                            {v.brand} {v.model}
-                          </p>
+                          <p className="text-sm font-bold text-slate-800">{v.brand} {v.model}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">{v.driver || t('pages.vehicles.notAssigned')}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center gap-1 text-xs text-gray-500">
-                        <span className="text-red-500">
-                          <MapPin size={14} />
-                        </span>
-                        {v.location || t('pages.vehicles.notSpecified')}
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <div className="w-24 flex items-center gap-2">
-                        <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full rounded-full ${
-                              v.fuel < 30 ? 'bg-red-500' : v.fuel < 50 ? 'bg-amber-500' : 'bg-emerald-500'
-                            }`}
-                            style={{ width: `${v.fuel}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-[10px] font-bold text-gray-600">{v.fuel}%</span>
-                      </div>
-                    </td>
+                    <td className="px-6 py-4 text-sm font-bold text-slate-800">{v.plate}</td>
+                    <td className="px-6 py-4 text-sm text-slate-600">{v.year}</td>
+                    <td className="px-6 py-4 text-sm text-slate-600">{v.mileage.toLocaleString()} {t('common.kilometers')}</td>
                     <td className="px-6 py-4">
                       <Badge type={v.status === 'نشط' ? 'success' : v.status === 'صيانة' ? 'warning' : 'danger'}>
-                        {v.status}
+                        {getTranslatedStatus(v.status)}
                       </Badge>
                     </td>
                     <td className="px-6 py-4">
@@ -220,22 +257,22 @@ export function Vehicles() {
 
         {/* Mobile Cards */}
         {filteredVehicles.length > 0 && (
-          <div className="md:hidden divide-y divide-gray-100">
+          <div className="md:hidden divide-y divide-slate-100">
             {filteredVehicles.map((v) => (
-              <div key={v.id} className="p-4 hover:bg-emerald-50/30 transition-colors">
+              <div key={v.id} className="p-4 hover:bg-slate-50/50 transition-colors">
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500">
+                    <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-500">
                       <Car size={20} />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-gray-800">{v.plate}</p>
-                      <p className="text-xs text-gray-500">{v.brand} {v.model}</p>
+                      <p className="text-sm font-bold text-slate-800">{v.brand} {v.model}</p>
+                      <p className="text-xs text-slate-500">{v.plate}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
                     <Badge type={v.status === 'نشط' ? 'success' : v.status === 'صيانة' ? 'warning' : 'danger'}>
-                      {v.status}
+                      {getTranslatedStatus(v.status)}
                     </Badge>
                     <Dropdown
                       trigger={<MoreVertical size={18} />}
@@ -245,29 +282,12 @@ export function Vehicles() {
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
-                    <p className="text-gray-400 mb-1">{t('pages.vehicles.driver')}</p>
-                    <p className="text-gray-700 font-medium">{v.driver || t('pages.vehicles.notAssigned')}</p>
+                    <p className="text-slate-400 mb-1">{t('dashboards.garage.year')}</p>
+                    <p className="text-slate-700 font-medium">{v.year}</p>
                   </div>
                   <div>
-                    <p className="text-gray-400 mb-1">{t('pages.vehicles.location')}</p>
-                    <div className="flex items-center gap-1 text-gray-700">
-                      <MapPin size={12} className="text-red-500" />
-                      <span className="truncate">{v.location || t('pages.vehicles.notSpecified')}</span>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-3">
-                  <p className="text-gray-400 text-xs mb-1">{t('pages.vehicles.fuelLevel')}</p>
-                  <div className="flex items-center gap-2">
-                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${
-                          v.fuel < 30 ? 'bg-red-500' : v.fuel < 50 ? 'bg-amber-500' : 'bg-emerald-500'
-                        }`}
-                        style={{ width: `${v.fuel}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-xs font-bold text-gray-600">{v.fuel}%</span>
+                    <p className="text-slate-400 mb-1">{t('dashboards.garage.mileage')}</p>
+                    <p className="text-slate-700 font-medium">{v.mileage.toLocaleString()} {t('common.kilometers')}</p>
                   </div>
                 </div>
               </div>
@@ -312,26 +332,22 @@ export function Vehicles() {
 
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-xs text-slate-400 mb-1">{t('pages.vehicles.status')}</p>
+                <p className="text-xs text-slate-400 mb-1">{t('dashboards.garage.status')}</p>
                 <Badge type={viewingVehicle.status === 'نشط' ? 'success' : viewingVehicle.status === 'صيانة' ? 'warning' : 'danger'}>
-                  {viewingVehicle.status}
+                  {getTranslatedStatus(viewingVehicle.status)}
                 </Badge>
               </div>
               <div>
-                <p className="text-xs text-slate-400 mb-1">{t('pages.vehicles.driver')}</p>
-                <p className="text-sm font-medium text-slate-700">{viewingVehicle.driver || t('pages.vehicles.notAssigned')}</p>
+                <p className="text-xs text-slate-400 mb-1">{t('dashboards.garage.year')}</p>
+                <p className="text-sm font-medium text-slate-700">{viewingVehicle.year}</p>
               </div>
               <div>
-                <p className="text-xs text-slate-400 mb-1">{t('pages.vehicles.fuelLevel')}</p>
-                <p className="text-sm font-medium text-slate-700">{viewingVehicle.fuel}%</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-400 mb-1">{t('vehicles.mileage')}</p>
+                <p className="text-xs text-slate-400 mb-1">{t('dashboards.garage.mileage')}</p>
                 <p className="text-sm font-medium text-slate-700">{viewingVehicle.mileage.toLocaleString()} {t('common.kilometers')}</p>
               </div>
-              <div className="col-span-2">
-                <p className="text-xs text-slate-400 mb-1">{t('pages.vehicles.location')}</p>
-                <p className="text-sm font-medium text-slate-700">{viewingVehicle.location || t('pages.vehicles.notSpecified')}</p>
+              <div>
+                <p className="text-xs text-slate-400 mb-1">{t('dashboards.garage.plate')}</p>
+                <p className="text-sm font-medium text-slate-700">{viewingVehicle.plate}</p>
               </div>
             </div>
 
