@@ -53,7 +53,7 @@ export function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen, isMobileOp
         return [
           { id: 'dashboard', label: t('nav.operationDashboard'), icon: LayoutDashboard },
           { id: 'vehicles', label: t('nav.availableVehicles'), icon: Car },
-          { id: 'reports', label: t('nav.requestLog'), icon: FileText },
+          { id: 'requestLog', label: t('nav.requestLog'), icon: FileText },
         ];
       case 'GARAGE':
         return [
@@ -150,18 +150,21 @@ export function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen, isMobileOp
 
       {/* Bottom Section: User Profile */}
       <div className="p-4 space-y-4">
-        {/* User Profile Card */}
+        {/* User Profile Card - Expanded */}
         {isOpen && (
-          <div className="p-4 bg-white/5 rounded-2xl border border-white/5">
-            <div className="flex items-center gap-3 mb-3">
-              <div className="w-10 h-10 bg-slate-800 rounded-full flex items-center justify-center text-emerald-400">
+          <div className={`p-4 rounded-2xl border transition-all ${activeTab === 'settings' ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-white/5 border-white/5'}`}>
+            <button
+              onClick={() => setActiveTab('settings')}
+              className="w-full flex items-center gap-3 mb-3 hover:opacity-80 transition-opacity"
+            >
+              <div className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${activeTab === 'settings' ? 'bg-emerald-500 text-white' : 'bg-slate-800 text-emerald-400'}`}>
                 <User size={20} />
               </div>
-              <div className="text-right overflow-hidden">
+              <div className="text-right overflow-hidden flex-1">
                 <p className="text-xs font-bold text-white truncate">{userName || t('departments.user')}</p>
                 <p className="text-[10px] opacity-50">{departmentLabel}</p>
               </div>
-            </div>
+            </button>
             <button
               onClick={onLogout}
               className="w-full py-2 bg-rose-500/10 hover:bg-rose-500/20 text-rose-500 rounded-xl text-[10px] font-bold transition-colors flex items-center justify-center gap-2"
@@ -172,15 +175,24 @@ export function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen, isMobileOp
           </div>
         )}
 
-        {/* Collapsed Logout */}
+        {/* User Profile - Collapsed */}
         {!isOpen && (
-          <button
-            onClick={onLogout}
-            className="w-full flex items-center justify-center p-3 text-rose-500 hover:bg-rose-500/10 rounded-xl transition-colors"
-            title={t('auth.logout')}
-          >
-            <LogOut size={20} />
-          </button>
+          <div className="space-y-2">
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`w-full flex items-center justify-center p-3 rounded-xl transition-colors ${activeTab === 'settings' ? 'bg-emerald-500 text-white' : 'text-emerald-400 hover:bg-white/10'}`}
+              title={t('settings.profile')}
+            >
+              <User size={20} />
+            </button>
+            <button
+              onClick={onLogout}
+              className="w-full flex items-center justify-center p-3 text-rose-500 hover:bg-rose-500/10 rounded-xl transition-colors"
+              title={t('auth.logout')}
+            >
+              <LogOut size={20} />
+            </button>
+          </div>
         )}
       </div>
     </aside>

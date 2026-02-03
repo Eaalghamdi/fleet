@@ -1,14 +1,14 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Monitor, Menu, Smartphone, Bell } from 'lucide-react';
+import { Monitor, Menu, Bell } from 'lucide-react';
 import { Sidebar, Header } from './components/layout';
-import { Dashboard, Vehicles, Maintenance, Inventory, Reports, Unauthorized, AdminDashboard, OperationDashboard, GarageDashboard, MaintenanceDashboard } from './pages';
+import { Dashboard, Vehicles, Maintenance, Inventory, Reports, OperationRequestLog, Unauthorized, AdminDashboard, OperationDashboard, GarageDashboard, MaintenanceDashboard, Settings } from './pages';
 import { DriverApp } from './driver';
 import { AppProvider, useApp } from './contexts/AppContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { ProtectedRoute, LoginPage } from './components/auth';
-import { ToastContainer, LanguageSwitcher } from './components/ui';
+import { ToastContainer } from './components/ui';
 import type { ViewType } from './types';
 
 type UserRole = 'admin' | 'driver';
@@ -66,6 +66,10 @@ function AppContent() {
         return <Inventory />;
       case 'reports':
         return <Reports />;
+      case 'requestLog':
+        return <OperationRequestLog />;
+      case 'settings':
+        return <Settings />;
       default:
         return getDepartmentDashboard();
     }
@@ -100,32 +104,11 @@ function AppContent() {
           <Menu size={24} className="text-slate-700" />
         </button>
         <span className="text-lg font-black text-slate-800 tracking-tighter">IVMP</span>
-        <div className="flex items-center gap-2">
-          {/* Language Switcher */}
-          <LanguageSwitcher variant="toggle" />
-          {/* Role Toggle */}
-          <div className="flex items-center gap-0.5 bg-slate-100 rounded-lg p-0.5">
-            <button
-              onClick={() => setUserRole('admin')}
-              className="p-1.5 rounded-md transition-all bg-emerald-600 text-white shadow-sm"
-              title="لوحة المدير"
-            >
-              <Monitor size={14} />
-            </button>
-            <button
-              onClick={() => setUserRole('driver')}
-              className="p-1.5 rounded-md transition-all text-slate-500"
-              title="واجهة السائق"
-            >
-              <Smartphone size={14} />
-            </button>
-          </div>
-          {/* Notification Bell */}
-          <button className="p-2 bg-white border border-slate-200 rounded-xl text-slate-500 relative">
-            <Bell size={16} />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 border-2 border-white rounded-full"></span>
-          </button>
-        </div>
+        {/* Notification Bell */}
+        <button className="p-2 bg-white border border-slate-200 rounded-xl text-slate-500 relative">
+          <Bell size={16} />
+          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 border-2 border-white rounded-full"></span>
+        </button>
       </div>
 
       {/* Mobile Sidebar Overlay */}
@@ -152,7 +135,7 @@ function AppContent() {
       {/* Main Content */}
       <main className={`flex-1 transition-all duration-500 pt-16 lg:pt-0 ${isSidebarOpen ? 'lg:rtl:mr-72 lg:ltr:ml-72' : 'lg:rtl:mr-20 lg:ltr:ml-20'}`}>
         {/* Header / Command Bar - Only on Dashboard */}
-        {activeTab === 'dashboard' && <Header userRole={userRole} setUserRole={setUserRole} />}
+        {activeTab === 'dashboard' && <Header />}
 
         {/* View Content */}
         <div className={`px-4 lg:px-10 pb-10 ${activeTab !== 'dashboard' ? 'pt-4 lg:pt-10' : ''}`}>

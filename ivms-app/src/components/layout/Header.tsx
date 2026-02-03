@@ -1,16 +1,8 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
-import { Bell, Search, Monitor, Smartphone, X, Car, Wrench, Package } from 'lucide-react';
+import { Bell, Search, X, Car, Wrench, Package } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../contexts/AppContext';
 import { NotificationsPanel } from './NotificationsPanel';
-import { LanguageSwitcher } from '../ui';
-
-type UserRole = 'admin' | 'driver';
-
-interface HeaderProps {
-  userRole: UserRole;
-  setUserRole: (role: UserRole) => void;
-}
 
 interface SearchResult {
   type: 'vehicle' | 'maintenance' | 'inventory';
@@ -19,7 +11,7 @@ interface SearchResult {
   id: string;
 }
 
-export function Header({ userRole, setUserRole }: HeaderProps) {
+export function Header() {
   const { vehicles, maintenance, inventory, notifications } = useApp();
   const { t } = useTranslation();
   const [searchTerm, setSearchTerm] = useState('');
@@ -185,35 +177,6 @@ export function Header({ userRole, setUserRole }: HeaderProps) {
 
       {/* Actions - Hidden on mobile (already in top nav) */}
       <div className="hidden lg:flex gap-3 items-center">
-        {/* Language Switcher */}
-        <LanguageSwitcher variant="toggle" />
-
-        {/* Role Toggle */}
-        <div className="flex items-center gap-1 bg-slate-100 rounded-xl p-1">
-          <button
-            onClick={() => setUserRole('admin')}
-            className={`p-2 rounded-lg transition-all ${
-              userRole === 'admin'
-                ? 'bg-emerald-600 text-white shadow-md'
-                : 'text-slate-500 hover:text-slate-700 hover:bg-white'
-            }`}
-            title="لوحة المدير"
-          >
-            <Monitor size={16} />
-          </button>
-          <button
-            onClick={() => setUserRole('driver')}
-            className={`p-2 rounded-lg transition-all ${
-              userRole === 'driver'
-                ? 'bg-emerald-600 text-white shadow-md'
-                : 'text-slate-500 hover:text-slate-700 hover:bg-white'
-            }`}
-            title="واجهة السائق"
-          >
-            <Smartphone size={16} />
-          </button>
-        </div>
-
         {/* Notification Bell */}
         <div className="relative">
           <button
