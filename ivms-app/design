@@ -1,0 +1,73 @@
+IVMS Design Tokens & Style Guide
+
+This guide summarizes the Clean Enterprise UI methodology used in the Canvas interface, balancing high functionality with modern aesthetics tailored for the "Asas Labs" brand identity.
+
+1. Color Palette
+
+The colors are chosen to reflect professional trust, authority, and safety:
+
+Primary: #006C35 (Deep Green) - Represents the official corporate identity.
+
+Secondary: #1E293B (Slate-900) - Used for high-contrast dark backgrounds like the Sidebar.
+
+Accent: #00A859 (Emerald) - For buttons, active states, and interactive elements.
+
+Background: #F8FAFC (Slate-50) - A very light background to reduce eye strain during long usage.
+
+Status Indicators:
+
+Danger: #EF4444 (Rose-500)
+
+Warning: #F59E0B (Amber-500)
+
+Success: #10B981 (Emerald-500)
+
+2. Typography
+
+Primary Font: Sans-serif (optimized for Left-to-Right orientation).
+
+Weights:
+
+font-black (900): Reserved for large, impactful main headings.
+
+font-bold (700): For subheaders and navigation menu items.
+
+font-medium (500): For body text and data labels.
+
+3. Structural Tokens
+
+Border Radius:
+
+Cards: rounded-2xl (1rem / 16px) for a soft, modern look.
+
+Buttons/Inputs: rounded-xl (0.75rem / 12px) for distinct interactivity.
+
+Shadows:
+
+Standard: shadow-sm for cards to provide subtle elevation without visual noise.
+
+Interactive: shadow-xl with color transparency (Colored Shadows) for active buttons.
+
+Borders:
+
+border-slate-200 for light external edges.
+
+border-white/5 for subtle dividers within dark surfaces.
+
+4. Interaction States
+
+Glassmorphism: Use backdrop-blur-md with bg-white/80 for the top header to provide a sense of depth and modernity.
+
+Hover Effects: Utilize transition-all paired with border or background shifts (e.g., hover:border-emerald-200) to guide user focus.
+
+Animations: Leverage the Tailwind CSS Animate library for smooth component entry (animate-in fade-in).
+
+5. Iconography
+
+Library: Lucide React.
+
+Sizing: Uniform 20px or 22px for primary nav and action icons.
+
+Visual Style: Use muted background colors for icons (e.g., an Emerald icon on an emerald-50 background) to highlight them comfortably without overpowering the text.
+
+These elements combine the technical robustness required for Fleet Management Systems (IVMS) with the seamless User Experience typical of modern SaaS applications.

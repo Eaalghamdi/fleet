@@ -1,0 +1,388 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================
+// ENUMS
+// ============================================
+
+enum Department {
+  ADMIN
+  OPERATION
+  GARAGE
+  MAINTENANCE
+}
+
+enum Role {
+  SUPER_ADMIN
+  OPERATOR
+}
+
+enum CarType {
+  SEDAN
+  SUV
+  TRUCK
+}
+
+enum CarStatus {
+  AVAILABLE
+  ASSIGNED
+  IN_TRANSIT
+  UNDER_MAINTENANCE
+  DELETED
+}
+
+enum CarRequestStatus {
+  PENDING
+  ASSIGNED
+  APPROVED
+  REJECTED
+  IN_TRANSIT
+  RETURNED
+  CANCELLED
+}
+
+enum MaintenanceStatus {
+  PENDING
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+  IN_PROGRESS
+  COMPLETED
+}
+
+enum MaintenanceType {
+  INTERNAL
+  EXTERNAL
+}
+
+enum TrackingMode {
+  QUANTITY
+  SERIAL_NUMBER
+}
+
+enum PurchaseRequestStatus {
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+}
+
+enum CarInventoryRequestType {
+  ADD
+  DELETE
+}
+
+enum CarInventoryRequestStatus {
+  PENDING_APPROVAL
+  APPROVED
+  REJECTED
+}
+
+enum NotificationType {
+  CAR_REQUEST_CREATED
+  CAR_REQUEST_ASSIGNED
+  CAR_REQUEST_APPROVED
+  CAR_REQUEST_REJECTED
+  CAR_IN_TRANSIT
+  CAR_RETURNED
+  MAINTENANCE_REQUEST_CREATED
+  MAINTENANCE_TRIAGED
+  MAINTENANCE_APPROVED
+  MAINTENANCE_REJECTED
+  MAINTENANCE_COMPLETED
+  PART_REQUESTED
+  PURCHASE_REQUEST_CREATED
+  PURCHASE_REQUEST_APPROVED
+  PURCHASE_REQUEST_REJECTED
+  CAR_INVENTORY_REQUEST_CREATED
+  CAR_INVENTORY_REQUEST_APPROVED
+  CAR_INVENTORY_REQUEST_REJECTED
+  SCHEDULED_MAINTENANCE_APPROACHING
+  SCHEDULED_MAINTENANCE_OVERDUE
+  WARRANTY_EXPIRING
+}
+
+// ============================================
+// MODELS
+// ============================================
+
+model User {
+  id           String     @id @default(uuid())
+  username     String     @unique
+  passwordHash String     @map("password_hash")
+  fullName     String     @map("full_name")
+  department   Department
+  role         Role
+  isActive     Boolean    @default(true) @map("is_active")
+  createdAt    DateTime   @default(now()) @map("created_at")
+  updatedAt    DateTime   @updatedAt @map("updated_at")
+
+  // Relations - Car Requests
+  createdCarRequests  CarRequest[] @relation("CarRequestCreatedBy")
+  assignedCarRequests CarRequest[] @relation("CarRequestAssignedBy")
+  approvedCarRequests CarRequest[] @relation("CarRequestApprovedBy")
+  cancelledCarRequests CarRequest[] @relation("CarRequestCancelledBy")
+
+  // Relations - Maintenance Requests
+  createdMaintenanceRequests MaintenanceRequest[] @relation("MaintenanceCreatedBy")
+  triagedMaintenanceRequests MaintenanceRequest[] @relation("MaintenanceTriagedBy")
+  approvedMaintenanceRequests MaintenanceRequest[] @relation("MaintenanceApprovedBy")
+
+  // Relations - Parts
+  assignedParts MaintenancePartUsage[] @relation("PartAssignedBy")
+
+  // Relations - Purchase Requests
+  createdPurchaseRequests  PurchaseRequest[] @relation("PurchaseRequestCreatedBy")
+  approvedPurchaseRequests PurchaseRequest[] @relation("PurchaseRequestApprovedBy")
+
+  // Relations - Car Inventory Requests
+  createdCarInventoryRequests  CarInventoryRequest[] @relation("CarInventoryRequestCreatedBy")
+  approvedCarInventoryRequests CarInventoryRequest[] @relation("CarInventoryRequestApprovedBy")
+
+  // Relations - Audit Logs
+  auditLogs AuditLog[] @relation("AuditLogPerformedBy")
+
+  // Relations - Notifications
+  notifications Notification[] @relation("NotificationUser")
+
+  @@map("users")
+}
+
+model RentalCompany {
+  id        String   @id @default(uuid())
+  name      String
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  carRequests CarRequest[] @relation("CarRequestRentalCompany")
+
+  @@map("rental_companies")
+}
+
+model Car {
+  id                        String    @id @default(uuid())
+  model                     String
+  type                      CarType
+  year                      Int
+  color                     String
+  licensePlate              String    @unique @map("license_plate")
+  vin                       String    @unique
+  mileage                   Int       @default(0)
+  warrantyExpiry            DateTime? @map("warranty_expiry")
+  status                    CarStatus @default(AVAILABLE)
+  maintenanceIntervalMonths Int?      @map("maintenance_interval_months")
+  nextMaintenanceDate       DateTime? @map("next_maintenance_date")
+  createdAt                 DateTime  @default(now()) @map("created_at")
+  updatedAt                 DateTime  @updatedAt @map("updated_at")
+
+  // Relations
+  carRequests         CarRequest[]         @relation("CarRequestCar")
+  maintenanceRequests MaintenanceRequest[] @relation("MaintenanceRequestCar")
+  carInventoryRequests CarInventoryRequest[] @relation("CarInventoryRequestCar")
+
+  @@map("cars")
+}
+
+model CarRequest {
+  id                 String           @id @default(uuid())
+  requestedCarType   CarType          @map("requested_car_type")
+  requestedCarId     String?          @map("requested_car_id")
+  isRental           Boolean          @default(false) @map("is_rental")
+  rentalCompanyId    String?          @map("rental_company_id")
+  departureLocation  String           @map("departure_location")
+  destination        String
+  departureDatetime  DateTime         @map("departure_datetime")
+  returnDatetime     DateTime         @map("return_datetime")
+  description        String?
+  status             CarRequestStatus @default(PENDING)
+  returnConditionNotes String?        @map("return_condition_notes")
+
+  // User references
+  createdById        String           @map("created_by")
+  assignedById       String?          @map("assigned_by")
+  approvedById       String?          @map("approved_by")
+  cancelledById      String?          @map("cancelled_by")
+
+  createdAt          DateTime         @default(now()) @map("created_at")
+  updatedAt          DateTime         @updatedAt @map("updated_at")
+
+  // Relations
+  requestedCar  Car?           @relation("CarRequestCar", fields: [requestedCarId], references: [id])
+  rentalCompany RentalCompany? @relation("CarRequestRentalCompany", fields: [rentalCompanyId], references: [id])
+  createdBy     User           @relation("CarRequestCreatedBy", fields: [createdById], references: [id])
+  assignedBy    User?          @relation("CarRequestAssignedBy", fields: [assignedById], references: [id])
+  approvedBy    User?          @relation("CarRequestApprovedBy", fields: [approvedById], references: [id])
+  cancelledBy   User?          @relation("CarRequestCancelledBy", fields: [cancelledById], references: [id])
+  images        CarRequestImage[] @relation("CarRequestImages")
+
+  @@map("car_requests")
+}
+
+model CarRequestImage {
+  id               String   @id @default(uuid())
+  carRequestId     String   @map("car_request_id")
+  filePath         String   @map("file_path")
+  originalFilename String   @map("original_filename")
+  uploadedAt       DateTime @default(now()) @map("uploaded_at")
+
+  // Relations
+  carRequest CarRequest @relation("CarRequestImages", fields: [carRequestId], references: [id], onDelete: Cascade)
+
+  @@map("car_request_images")
+}
+
+model MaintenanceRequest {
+  id              String            @id @default(uuid())
+  carId           String            @map("car_id")
+  description     String
+  maintenanceType MaintenanceType?  @map("maintenance_type")
+  externalVendor  String?           @map("external_vendor")
+  externalCost    Decimal?          @map("external_cost") @db.Decimal(10, 2)
+  status          MaintenanceStatus @default(PENDING)
+
+  // User references
+  createdById     String            @map("created_by")
+  triagedById     String?           @map("triaged_by")
+  approvedById    String?           @map("approved_by")
+
+  createdAt       DateTime          @default(now()) @map("created_at")
+  updatedAt       DateTime          @updatedAt @map("updated_at")
+
+  // Relations
+  car       Car   @relation("MaintenanceRequestCar", fields: [carId], references: [id])
+  createdBy User  @relation("MaintenanceCreatedBy", fields: [createdById], references: [id])
+  triagedBy User? @relation("MaintenanceTriagedBy", fields: [triagedById], references: [id])
+  approvedBy User? @relation("MaintenanceApprovedBy", fields: [approvedById], references: [id])
+  partsUsed MaintenancePartUsage[] @relation("MaintenancePartUsage")
+
+  @@map("maintenance_requests")
+}
+
+model Part {
+  id           String       @id @default(uuid())
+  name         String
+  carType      CarType      @map("car_type")
+  carModel     String       @map("car_model")
+  trackingMode TrackingMode @map("tracking_mode")
+  quantity     Int?
+  serialNumber String?      @unique @map("serial_number")
+  isDeleted    Boolean      @default(false) @map("is_deleted")
+  createdAt    DateTime     @default(now()) @map("created_at")
+  updatedAt    DateTime     @updatedAt @map("updated_at")
+
+  // Relations
+  usageRecords MaintenancePartUsage[] @relation("PartUsageRecords")
+
+  @@map("parts")
+}
+
+model MaintenancePartUsage {
+  id                   String   @id @default(uuid())
+  maintenanceRequestId String   @map("maintenance_request_id")
+  partId               String   @map("part_id")
+  quantityUsed         Int      @default(1) @map("quantity_used")
+  assignedById         String   @map("assigned_by")
+  assignedAt           DateTime @default(now()) @map("assigned_at")
+
+  // Relations
+  maintenanceRequest MaintenanceRequest @relation("MaintenancePartUsage", fields: [maintenanceRequestId], references: [id])
+  part               Part               @relation("PartUsageRecords", fields: [partId], references: [id])
+  assignedBy         User               @relation("PartAssignedBy", fields: [assignedById], references: [id])
+
+  @@map("maintenance_part_usage")
+}
+
+model PurchaseRequest {
+  id            String                @id @default(uuid())
+  partName      String                @map("part_name")
+  quantity      Int
+  estimatedCost Decimal               @map("estimated_cost") @db.Decimal(10, 2)
+  vendor        String
+  status        PurchaseRequestStatus @default(PENDING_APPROVAL)
+
+  // User references
+  createdById   String                @map("created_by")
+  approvedById  String?               @map("approved_by")
+
+  createdAt     DateTime              @default(now()) @map("created_at")
+  updatedAt     DateTime              @updatedAt @map("updated_at")
+
+  // Relations
+  createdBy  User  @relation("PurchaseRequestCreatedBy", fields: [createdById], references: [id])
+  approvedBy User? @relation("PurchaseRequestApprovedBy", fields: [approvedById], references: [id])
+
+  @@map("purchase_requests")
+}
+
+model CarInventoryRequest {
+  id        String                    @id @default(uuid())
+  type      CarInventoryRequestType
+  carId     String?                   @map("car_id")
+  status    CarInventoryRequestStatus @default(PENDING_APPROVAL)
+
+  // Car data for ADD requests (stored as JSON to preserve request data)
+  carData   Json?                     @map("car_data")
+
+  // User references
+  createdById  String                 @map("created_by")
+  approvedById String?                @map("approved_by")
+
+  createdAt DateTime                  @default(now()) @map("created_at")
+  updatedAt DateTime                  @updatedAt @map("updated_at")
+
+  // Relations
+  car        Car?  @relation("CarInventoryRequestCar", fields: [carId], references: [id])
+  createdBy  User  @relation("CarInventoryRequestCreatedBy", fields: [createdById], references: [id])
+  approvedBy User? @relation("CarInventoryRequestApprovedBy", fields: [approvedById], references: [id])
+
+  @@map("car_inventory_requests")
+}
+
+model AuditLog {
+  id            String     @id @default(uuid())
+  action        String
+  entityType    String     @map("entity_type")
+  entityId      String     @map("entity_id")
+  performedById String     @map("performed_by")
+  department    Department
+  details       Json?
+  timestamp     DateTime   @default(now())
+
+  // Relations
+  performedBy User @relation("AuditLogPerformedBy", fields: [performedById], references: [id])
+
+  @@index([entityType, entityId])
+  @@index([performedById])
+  @@index([department])
+  @@index([timestamp])
+  @@map("audit_logs")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String           @map("user_id")
+  type      NotificationType
+  title     String
+  message   String
+  entityType String?         @map("entity_type")
+  entityId   String?         @map("entity_id")
+  isRead    Boolean          @default(false) @map("is_read")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  // Relations
+  user User @relation("NotificationUser", fields: [userId], references: [id])
+
+  @@index([userId, isRead])
+  @@index([createdAt])
+  @@map("notifications")
+}

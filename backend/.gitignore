@@ -1,0 +1,34 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Keep environment variables out of version control
+.env
+.env.local
+.env.*.local
+
+# Prisma
+/generated/prisma
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Coverage
+coverage/
+
+# Uploads (runtime directory for uploaded files)
+/uploads/

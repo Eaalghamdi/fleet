@@ -1,0 +1,110 @@
+import type { Vehicle, MaintenanceRequest, InventoryItem, FuelDataPoint } from '../types';
+
+export const vehicleData: Vehicle[] = [
+  {
+    id: 'VH-001',
+    plate: 'أ ب ج ١٢٣٤',
+    brand: 'Toyota',
+    model: 'Hilux',
+    year: 2023,
+    status: 'نشط',
+    driver: 'أحمد القحطاني',
+    fuel: 85,
+    mileage: 45200,
+    location: 'الرياض - حي الملز',
+  },
+  {
+    id: 'VH-002',
+    plate: 'س ع د ٥٦٧٨',
+    brand: 'Nissan',
+    model: 'Patrol',
+    year: 2022,
+    status: 'صيانة',
+    driver: 'محمد العتيبي',
+    fuel: 20,
+    mileage: 78500,
+    location: 'جدة - المنطقة الصناعية',
+  },
+  {
+    id: 'VH-003',
+    plate: 'ر ك ب ٩٠١٢',
+    brand: 'Ford',
+    model: 'F-150',
+    year: 2024,
+    status: 'نشط',
+    driver: 'سعد الحربي',
+    fuel: 90,
+    mileage: 12300,
+    location: 'الدمام - المطار',
+  },
+  {
+    id: 'VH-004',
+    plate: 'ن ص ر ٣٤٥٦',
+    brand: 'Toyota',
+    model: 'Land Cruiser',
+    year: 2023,
+    status: 'نشط',
+    driver: 'فيصل أحمد',
+    fuel: 45,
+    mileage: 34800,
+    location: 'فرع الدمام',
+  },
+  {
+    id: 'VH-005',
+    plate: 'ف و ز ٧٨٩٠',
+    brand: 'Mitsubishi',
+    model: 'Pajero',
+    year: 2021,
+    status: 'متوقف',
+    driver: 'غير معين',
+    fuel: 0,
+    mileage: 98700,
+    location: 'المقر الرئيسي',
+  },
+];
+
+export const maintenanceRequests: MaintenanceRequest[] = [
+  {
+    id: 'MR-001',
+    vehicle: 'VH-002',
+    type: 'تصحيحية',
+    description: 'تسريب زيت المحرك',
+    status: 'قيد التنفيذ',
+    priority: 'عالية',
+    createdAt: '2025-01-20',
+  },
+  {
+    id: 'MR-002',
+    vehicle: 'VH-004',
+    type: 'وقائية',
+    description: 'صيانة 50 ألف كم',
+    status: 'بانتظار الموافقة',
+    priority: 'متوسطة',
+    createdAt: '2025-01-22',
+  },
+  {
+    id: 'MR-003',
+    vehicle: 'VH-001',
+    type: 'تصحيحية',
+    description: 'استبدال وسائد الفرامل',
+    status: 'مكتمل',
+    priority: 'عالية',
+    createdAt: '2025-01-18',
+  },
+];
+
+export const inventoryData: InventoryItem[] = [
+  { id: 'INV-001', name: 'زيت محرك 5W-30', category: 'سوائل', quantity: 45, minStock: 20 },
+  { id: 'INV-002', name: 'وسائد فرامل (أمامية)', category: 'فرامل', quantity: 8, minStock: 10 },
+  { id: 'INV-003', name: 'فلتر هواء', category: 'فلاتر', quantity: 25, minStock: 15 },
+  { id: 'INV-004', name: 'سائل ناقل الحركة', category: 'سوائل', quantity: 12, minStock: 8 },
+];
+
+export const fuelData: FuelDataPoint[] = [
+  { month: 'يناير', value: 40 },
+  { month: 'فبراير', value: 70 },
+  { month: 'مارس', value: 55 },
+  { month: 'أبريل', value: 90 },
+  { month: 'مايو', value: 65 },
+  { month: 'يونيو', value: 85 },
+];

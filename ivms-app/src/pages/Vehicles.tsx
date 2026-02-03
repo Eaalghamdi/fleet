@@ -1,0 +1,373 @@
+import { useState } from 'react';
+import { Search, Plus, Car, MapPin, MoreVertical, Eye, Pencil, Trash2, FileDown } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
+import { Badge, Dropdown, ConfirmDialog, Modal } from '../components/ui';
+import { VehicleModal } from '../components/modals/VehicleModal';
+import { useApp } from '../contexts/AppContext';
+import type { Vehicle } from '../types';
+
+export function Vehicles() {
+  const { t } = useTranslation();
+  const { vehicles, addVehicle, updateVehicle, deleteVehicle } = useApp();
+  const [searchTerm, setSearchTerm] = useState('');
+
+  // Modal states
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [editingVehicle, setEditingVehicle] = useState<Vehicle | null>(null);
+  const [viewingVehicle, setViewingVehicle] = useState<Vehicle | null>(null);
+  const [deletingVehicle, setDeletingVehicle] = useState<Vehicle | null>(null);
+
+  const filteredVehicles = vehicles.filter(
+    (v) =>
+      v.plate.includes(searchTerm) ||
+      v.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      v.driver.includes(searchTerm)
+  );
+
+  const handleAdd = (data: Omit<Vehicle, 'id'>) => {
+    addVehicle(data);
+    setIsAddModalOpen(false);
+  };
+
+  const handleEdit = (data: Omit<Vehicle, 'id'>) => {
+    if (editingVehicle) {
+      updateVehicle(editingVehicle.id, data);
+      setEditingVehicle(null);
+    }
+  };
+
+  const handleDelete = () => {
+    if (deletingVehicle) {
+      deleteVehicle(deletingVehicle.id);
+      setDeletingVehicle(null);
+    }
+  };
+
+  const handleExportExcel = () => {
+    // Generate CSV content
+    const headers = ['رقم المركبة', 'رقم اللوحة', 'الشركة', 'الموديل', 'السنة', 'السائق', 'الحالة', 'الوقود', 'المسافة', 'الموقع'];
+    const rows = vehicles.map(v => [
+      v.id,
+      v.plate,
+      v.brand,
+      v.model,
+      v.year.toString(),
+      v.driver,
+      v.status,
+      v.fuel.toString() + '%',
+      v.mileage.toString() + ' كم',
+      v.location
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = 'vehicles.csv';
+    link.click();
+  };
+
+  const getDropdownItems = (vehicle: Vehicle) => [
+    {
+      label: t('pages.vehicles.viewDetails'),
+      icon: <Eye size={16} />,
+      onClick: () => setViewingVehicle(vehicle),
+    },
+    {
+      label: t('pages.vehicles.edit'),
+      icon: <Pencil size={16} />,
+      onClick: () => setEditingVehicle(vehicle),
+    },
+    {
+      label: t('pages.vehicles.delete'),
+      icon: <Trash2 size={16} />,
+      onClick: () => setDeletingVehicle(vehicle),
+      variant: 'danger' as const,
+    },
+  ];
+
+  return (
+    <div className="space-y-6 animate-fade-in">
+      {/* Page Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-800">{t('pages.vehicles.title')}</h1>
+          <p className="text-sm text-gray-500">{t('pages.vehicles.description')} ({t('pages.vehicles.vehicleCount', { count: vehicles.length })})</p>
+        </div>
+      </div>
+
+      {/* Table Card */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        {/* Search and Actions */}
+        <div className="p-4 sm:p-6 border-b border-gray-50 flex flex-col md:flex-row justify-between gap-4">
+          <div className="relative flex-1">
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+              <Search size={18} />
+            </div>
+            <input
+              type="text"
+              placeholder={t('pages.vehicles.searchPlaceholder')}
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pr-10 pl-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+            />
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleExportExcel}
+              className="hidden sm:flex px-4 py-2 border border-gray-200 rounded-xl text-sm font-medium text-gray-600 hover:bg-gray-50 items-center gap-2"
+            >
+              <FileDown size={16} />
+              {t('pages.vehicles.exportExcel')}
+            </button>
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="flex-1 sm:flex-none px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/30"
+            >
+              <Plus size={18} /> {t('pages.vehicles.addVehicle')}
+            </button>
+          </div>
+        </div>
+
+        {/* Empty State */}
+        {filteredVehicles.length === 0 && (
+          <div className="p-12 text-center">
+            <Car size={48} className="mx-auto text-gray-300 mb-4" />
+            <h3 className="text-lg font-medium text-gray-600 mb-2">{t('pages.vehicles.noVehicles')}</h3>
+            <p className="text-sm text-gray-400 mb-4">
+              {searchTerm ? t('pages.vehicles.noSearchResults') : t('pages.vehicles.startByAdding')}
+            </p>
+            {!searchTerm && (
+              <button
+                onClick={() => setIsAddModalOpen(true)}
+                className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700"
+              >
+                {t('pages.vehicles.addVehicle')}
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* Desktop Table */}
+        {filteredVehicles.length > 0 && (
+          <div className="hidden md:block overflow-x-auto">
+            <table className="w-full text-right">
+              <thead className="bg-gray-50 text-gray-500 text-xs uppercase tracking-wider">
+                <tr>
+                  <th className="px-6 py-4 font-bold">{t('pages.vehicles.vehicleAndPlate')}</th>
+                  <th className="px-6 py-4 font-bold">{t('pages.vehicles.currentDriver')}</th>
+                  <th className="px-6 py-4 font-bold">{t('pages.vehicles.liveLocation')}</th>
+                  <th className="px-6 py-4 font-bold">{t('pages.vehicles.fuelLevel')}</th>
+                  <th className="px-6 py-4 font-bold">{t('pages.vehicles.status')}</th>
+                  <th className="px-6 py-4 font-bold"></th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {filteredVehicles.map((v) => (
+                  <tr key={v.id} className="hover:bg-emerald-50/30 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500">
+                          <Car size={20} />
+                        </div>
+                        <div>
+                          <p className="text-sm font-bold text-gray-800">{v.plate}</p>
+                          <p className="text-xs text-gray-500">
+                            {v.brand} {v.model}
+                          </p>
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">{v.driver || t('pages.vehicles.notAssigned')}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <span className="text-red-500">
+                          <MapPin size={14} />
+                        </span>
+                        {v.location || t('pages.vehicles.notSpecified')}
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="w-24 flex items-center gap-2">
+                        <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${
+                              v.fuel < 30 ? 'bg-red-500' : v.fuel < 50 ? 'bg-amber-500' : 'bg-emerald-500'
+                            }`}
+                            style={{ width: `${v.fuel}%` }}
+                          ></div>
+                        </div>
+                        <span className="text-[10px] font-bold text-gray-600">{v.fuel}%</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-4">
+                      <Badge type={v.status === 'نشط' ? 'success' : v.status === 'صيانة' ? 'warning' : 'danger'}>
+                        {v.status}
+                      </Badge>
+                    </td>
+                    <td className="px-6 py-4">
+                      <Dropdown
+                        trigger={<MoreVertical size={18} />}
+                        items={getDropdownItems(v)}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Mobile Cards */}
+        {filteredVehicles.length > 0 && (
+          <div className="md:hidden divide-y divide-gray-100">
+            {filteredVehicles.map((v) => (
+              <div key={v.id} className="p-4 hover:bg-emerald-50/30 transition-colors">
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500">
+                      <Car size={20} />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-800">{v.plate}</p>
+                      <p className="text-xs text-gray-500">{v.brand} {v.model}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Badge type={v.status === 'نشط' ? 'success' : v.status === 'صيانة' ? 'warning' : 'danger'}>
+                      {v.status}
+                    </Badge>
+                    <Dropdown
+                      trigger={<MoreVertical size={18} />}
+                      items={getDropdownItems(v)}
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <p className="text-gray-400 mb-1">{t('pages.vehicles.driver')}</p>
+                    <p className="text-gray-700 font-medium">{v.driver || t('pages.vehicles.notAssigned')}</p>
+                  </div>
+                  <div>
+                    <p className="text-gray-400 mb-1">{t('pages.vehicles.location')}</p>
+                    <div className="flex items-center gap-1 text-gray-700">
+                      <MapPin size={12} className="text-red-500" />
+                      <span className="truncate">{v.location || t('pages.vehicles.notSpecified')}</span>
+                    </div>
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <p className="text-gray-400 text-xs mb-1">{t('pages.vehicles.fuelLevel')}</p>
+                  <div className="flex items-center gap-2">
+                    <div className="flex-1 h-2 bg-gray-100 rounded-full overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${
+                          v.fuel < 30 ? 'bg-red-500' : v.fuel < 50 ? 'bg-amber-500' : 'bg-emerald-500'
+                        }`}
+                        style={{ width: `${v.fuel}%` }}
+                      ></div>
+                    </div>
+                    <span className="text-xs font-bold text-gray-600">{v.fuel}%</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Add Modal */}
+      <VehicleModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onSubmit={handleAdd}
+      />
+
+      {/* Edit Modal */}
+      <VehicleModal
+        isOpen={!!editingVehicle}
+        onClose={() => setEditingVehicle(null)}
+        vehicle={editingVehicle || undefined}
+        onSubmit={handleEdit}
+      />
+
+      {/* View Modal */}
+      <Modal
+        isOpen={!!viewingVehicle}
+        onClose={() => setViewingVehicle(null)}
+        title={t('pages.vehicles.vehicleDetails')}
+        size="md"
+      >
+        {viewingVehicle && (
+          <div className="p-6 space-y-4">
+            <div className="flex items-center gap-4 pb-4 border-b border-slate-100">
+              <div className="w-16 h-16 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
+                <Car size={32} />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">{viewingVehicle.plate}</h3>
+                <p className="text-sm text-slate-500">{viewingVehicle.brand} {viewingVehicle.model} ({viewingVehicle.year})</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs text-slate-400 mb-1">{t('pages.vehicles.status')}</p>
+                <Badge type={viewingVehicle.status === 'نشط' ? 'success' : viewingVehicle.status === 'صيانة' ? 'warning' : 'danger'}>
+                  {viewingVehicle.status}
+                </Badge>
+              </div>
+              <div>
+                <p className="text-xs text-slate-400 mb-1">{t('pages.vehicles.driver')}</p>
+                <p className="text-sm font-medium text-slate-700">{viewingVehicle.driver || t('pages.vehicles.notAssigned')}</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-400 mb-1">{t('pages.vehicles.fuelLevel')}</p>
+                <p className="text-sm font-medium text-slate-700">{viewingVehicle.fuel}%</p>
+              </div>
+              <div>
+                <p className="text-xs text-slate-400 mb-1">{t('vehicles.mileage')}</p>
+                <p className="text-sm font-medium text-slate-700">{viewingVehicle.mileage.toLocaleString()} {t('common.kilometers')}</p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-xs text-slate-400 mb-1">{t('pages.vehicles.location')}</p>
+                <p className="text-sm font-medium text-slate-700">{viewingVehicle.location || t('pages.vehicles.notSpecified')}</p>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-4 border-t border-slate-100">
+              <button
+                onClick={() => {
+                  setViewingVehicle(null);
+                  setEditingVehicle(viewingVehicle);
+                }}
+                className="flex-1 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                <Pencil size={16} />
+                {t('pages.vehicles.edit')}
+              </button>
+              <button
+                onClick={() => setViewingVehicle(null)}
+                className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
+              >
+                {t('common.close')}
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* Delete Confirmation */}
+      <ConfirmDialog
+        isOpen={!!deletingVehicle}
+        onClose={() => setDeletingVehicle(null)}
+        onConfirm={handleDelete}
+        title={t('pages.vehicles.deleteVehicle')}
+        message={t('pages.vehicles.deleteConfirmation', { plate: deletingVehicle?.plate })}
+        confirmText={t('pages.vehicles.deleteButton')}
+        cancelText={t('pages.vehicles.cancelButton')}
+        type="danger"
+      />
+    </div>
+  );
+}
