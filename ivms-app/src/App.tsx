@@ -1,9 +1,8 @@
 import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Monitor, Menu, Bell } from 'lucide-react';
+import { Menu, Bell } from 'lucide-react';
 import { Sidebar, Header } from './components/layout';
-import { Dashboard, Vehicles, Maintenance, Inventory, Reports, OperationRequestLog, Unauthorized, AdminDashboard, OperationDashboard, GarageDashboard, MaintenanceDashboard, Settings } from './pages';
-import { DriverApp } from './driver';
+import { Dashboard, Vehicles, Maintenance, Inventory, Reports, Unauthorized, AdminDashboard, OperationDashboard, GarageDashboard, MaintenanceDashboard, Settings, UserManagement } from './pages';
 import { AppProvider, useApp } from './contexts/AppContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
@@ -11,13 +10,10 @@ import { ProtectedRoute, LoginPage } from './components/auth';
 import { ToastContainer } from './components/ui';
 import type { ViewType } from './types';
 
-type UserRole = 'admin' | 'driver';
-
 function AppContent() {
   const [activeTab, setActiveTab] = useState<ViewType>('dashboard');
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const [userRole, setUserRole] = useState<UserRole>('admin');
   const { logout, user } = useAuth();
   const { direction } = useLanguage();
 
@@ -64,10 +60,10 @@ function AppContent() {
         return <Maintenance />;
       case 'inventory':
         return <Inventory />;
+      case 'users':
+        return <UserManagement />;
       case 'reports':
         return <Reports />;
-      case 'requestLog':
-        return <OperationRequestLog />;
       case 'settings':
         return <Settings />;
       default:
@@ -75,24 +71,7 @@ function AppContent() {
     }
   };
 
-  // Driver view
-  if (userRole === 'driver') {
-    return (
-      <div dir={direction} className="relative">
-        {/* Subtle back to admin button */}
-        <button
-          onClick={() => setUserRole('admin')}
-          className="fixed top-4 left-4 z-60 p-2 bg-white/80 backdrop-blur border border-slate-200 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-white transition-all shadow-sm"
-          title="العودة للوحة المدير"
-        >
-          <Monitor size={18} />
-        </button>
-        <DriverApp />
-      </div>
-    );
-  }
-
-  // Admin view
+  // Main view
   return (
     <div className="flex min-h-screen bg-slate-50" dir={direction}>
       {/* Mobile Header */}

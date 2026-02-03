@@ -6,7 +6,7 @@ export interface Vehicle {
   brand: string;
   model: string;
   year: number;
-  status: 'نشط' | 'صيانة' | 'متوقف';
+  status: 'active' | 'maintenance' | 'inactive';
   driver: string;
   fuel: number;
   mileage: number;
@@ -16,10 +16,10 @@ export interface Vehicle {
 export interface MaintenanceRequest {
   id: string;
   vehicle: string;
-  type: 'تصحيحية' | 'وقائية';
+  type: 'corrective' | 'preventive';
   description: string;
-  status: 'قيد التنفيذ' | 'بانتظار الموافقة' | 'مكتمل' | 'مجدول';
-  priority: 'عالية' | 'متوسطة' | 'منخفضة';
+  status: 'in_progress' | 'pending_approval' | 'completed' | 'scheduled';
+  priority: 'high' | 'medium' | 'low';
   createdAt: string;
 }
 
@@ -44,7 +44,7 @@ export interface NavItem {
 
 export type BadgeType = 'success' | 'danger' | 'warning' | 'info';
 
-export type ViewType = 'dashboard' | 'vehicles' | 'maintenance' | 'inventory' | 'reports' | 'settings';
+export type ViewType = 'dashboard' | 'vehicles' | 'maintenance' | 'inventory' | 'reports' | 'settings' | 'users';
 
 export interface Notification {
   id: string;
@@ -53,6 +53,47 @@ export interface Notification {
   type: 'success' | 'error' | 'warning' | 'info';
   timestamp: string;
   read: boolean;
+}
+
+export type CarType = 'sedan' | 'suv' | 'truck';
+
+export type CarRequestStatus =
+  | 'pending'
+  | 'assigned'
+  | 'approved'
+  | 'rejected'
+  | 'in_transit'
+  | 'returned'
+  | 'cancelled';
+
+export interface CarRequest {
+  id: string;
+  requestedCarType: CarType;
+  requestedCarId: string | null;
+  isRental: boolean;
+  rentalCompanyId: string | null;
+  rentalCompanyName: string | null;
+  departureLocation: string;
+  destination: string;
+  departureDatetime: string;
+  returnDatetime: string;
+  description: string | null;
+  status: CarRequestStatus;
+  images: string[];
+  assignedCarPlate: string | null;
+  cancelledBy: string | null;
+  assignedBy: string | null;
+  approvedBy: string | null;
+  returnConditionNotes: string | null;
+  createdBy: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface RentalCompany {
+  id: string;
+  name: string;
+  isActive: boolean;
 }
 
 export interface Toast {

@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   User,
+  Users,
   X,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
@@ -47,13 +48,13 @@ export function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen, isMobileOp
           { id: 'vehicles', label: t('nav.vehicleManagement'), icon: Car },
           { id: 'maintenance', label: t('nav.maintenanceManagement'), icon: Wrench },
           { id: 'inventory', label: t('nav.inventoryManagement'), icon: Package },
+          { id: 'users', label: t('nav.userManagement'), icon: Users },
           { id: 'reports', label: t('nav.reports'), icon: FileText },
         ];
       case 'OPERATION':
         return [
           { id: 'dashboard', label: t('nav.operationDashboard'), icon: LayoutDashboard },
           { id: 'vehicles', label: t('nav.availableVehicles'), icon: Car },
-          { id: 'requestLog', label: t('nav.requestLog'), icon: FileText },
         ];
       case 'GARAGE':
         return [
