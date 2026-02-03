@@ -12,7 +12,8 @@ import {
   MoreVertical,
   Eye,
   Pencil,
-  Trash2
+  Trash2,
+  Filter
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Dropdown, ConfirmDialog, Modal } from '../components/ui';
@@ -26,6 +27,8 @@ export function Inventory() {
   const { inventory, addInventoryItem, updateInventoryItem, deleteInventoryItem, orderInventoryItem } = useApp();
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
+  const [categoryFilter, setCategoryFilter] = useState<string>('all');
+  const [stockFilter, setStockFilter] = useState<string>('all');
 
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -34,12 +37,23 @@ export function Inventory() {
   const [deletingItem, setDeletingItem] = useState<InventoryItem | null>(null);
   const [orderingItem, setOrderingItem] = useState<InventoryItem | null>(null);
 
-  // Filter items based on search
+  // Get unique categories
+  const uniqueCategories = useMemo(() => {
+    const categories = new Set(inventory.map(item => item.category));
+    return Array.from(categories).sort();
+  }, [inventory]);
+
+  // Filter items based on search and filters
   const filteredItems = useMemo(() => {
-    return inventory.filter(item =>
-      item.name.includes(searchQuery) || item.id.includes(searchQuery) || item.category.includes(searchQuery)
-    );
-  }, [inventory, searchQuery]);
+    return inventory.filter(item => {
+      const matchesSearch = item.name.includes(searchQuery) || item.id.includes(searchQuery) || item.category.includes(searchQuery);
+      const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter;
+      const matchesStock = stockFilter === 'all' ||
+        (stockFilter === 'low' && item.quantity <= item.minStock) ||
+        (stockFilter === 'inStock' && item.quantity > item.minStock);
+      return matchesSearch && matchesCategory && matchesStock;
+    });
+  }, [inventory, searchQuery, categoryFilter, stockFilter]);
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -147,33 +161,69 @@ export function Inventory() {
 
       {/* Data Table */}
       <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm">
-        <div className="p-4 sm:p-6 border-b border-slate-100 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="flex items-center gap-3 sm:gap-4">
-            <div className="flex border border-slate-200 rounded-lg p-1 bg-slate-50">
-              <button
-                onClick={() => setViewMode('list')}
-                className={`p-1.5 rounded-md ${viewMode === 'list' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400'}`}
-              >
-                <List size={16}/>
-              </button>
-              <button
-                onClick={() => setViewMode('grid')}
-                className={`p-1.5 rounded-md ${viewMode === 'grid' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400'}`}
-              >
-                <LayoutGrid size={16}/>
-              </button>
+        <div className="p-4 sm:p-6 border-b border-slate-100 space-y-4">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="flex items-center gap-3 sm:gap-4">
+              <div className="flex border border-slate-200 rounded-lg p-1 bg-slate-50">
+                <button
+                  onClick={() => setViewMode('list')}
+                  className={`p-1.5 rounded-md ${viewMode === 'list' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400'}`}
+                >
+                  <List size={16}/>
+                </button>
+                <button
+                  onClick={() => setViewMode('grid')}
+                  className={`p-1.5 rounded-md ${viewMode === 'grid' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400'}`}
+                >
+                  <LayoutGrid size={16}/>
+                </button>
+              </div>
+              <h4 className="font-bold text-slate-800 text-sm sm:text-base">{t('pages.inventory.centralWarehouseList')}</h4>
             </div>
-            <h4 className="font-bold text-slate-800 text-sm sm:text-base">{t('pages.inventory.centralWarehouseList')}</h4>
+            <div className="relative w-full md:w-64">
+              <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
+              <input
+                type="text"
+                placeholder={t('pages.inventory.searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pr-10 pl-4 text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
+              />
+            </div>
           </div>
-          <div className="relative w-full md:w-64">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-            <input
-              type="text"
-              placeholder={t('pages.inventory.searchPlaceholder')}
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pr-10 pl-4 text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
-            />
+
+          {/* Filters */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="flex items-center gap-2 text-sm text-gray-500">
+              <Filter size={16} />
+              <span>{t('common.filter')}:</span>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              {/* Category Filter */}
+              <select
+                value={categoryFilter}
+                onChange={(e) => setCategoryFilter(e.target.value)}
+                className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all min-w-[140px]"
+              >
+                <option value="all">{t('pages.inventory.allCategories')}</option>
+                {uniqueCategories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
+
+              {/* Stock Status Filter */}
+              <select
+                value={stockFilter}
+                onChange={(e) => setStockFilter(e.target.value)}
+                className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all min-w-[140px]"
+              >
+                <option value="all">{t('pages.inventory.allStockLevels')}</option>
+                <option value="inStock">{t('pages.inventory.inStock')}</option>
+                <option value="low">{t('pages.inventory.lowStock')}</option>
+              </select>
+            </div>
           </div>
         </div>
 
