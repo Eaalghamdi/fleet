@@ -10,6 +10,7 @@ import {
   FileText,
   TrendingUp,
   Check,
+  History,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { StatCard, Badge, GlassCard, Modal } from '../../components/ui';
@@ -56,24 +57,43 @@ type RequestType = CarRequest | MaintenanceRequest | InventoryRequest | AddVehic
 
 type TabType = 'carRequests' | 'maintenance' | 'inventory' | 'carInventory';
 
+type ApprovedRequestType = 'carRequest' | 'maintenance' | 'inventory' | 'addVehicle';
+
+interface ApprovedRequestItem {
+  id: string;
+  type: ApprovedRequestType;
+  description: string;
+  requester: string;
+  approvedAt: string;
+  approvedBy: string;
+}
+
+// Mock approved requests data
+const mockApprovedRequests: ApprovedRequestItem[] = [
+  { id: 'CR-098', type: 'carRequest', description: 'Vehicle for site visit', requester: 'Ahmed Mohammed', approvedAt: '2024-01-31 14:30', approvedBy: 'Admin' },
+  { id: 'MR-045', type: 'maintenance', description: 'Oil change - ABC 1234', requester: 'Garage', approvedAt: '2024-01-30 10:15', approvedBy: 'Admin' },
+  { id: 'PR-022', type: 'inventory', description: 'Brake pads (20 units)', requester: 'Maintenance', approvedAt: '2024-01-28 16:45', approvedBy: 'Admin' },
+  { id: 'CI-015', type: 'addVehicle', description: 'Toyota Hilux - NEW 9876', requester: 'Operations', approvedAt: '2024-01-25 09:00', approvedBy: 'Admin' },
+];
+
 // Mock pending approvals data
 const mockPendingApprovals = {
   carRequests: [
-    { id: 'CR-001', type: 'طلب مركبة', requester: 'أحمد محمد', department: 'العمليات', date: '2024-01-15', priority: 'عالية' },
-    { id: 'CR-002', type: 'طلب مركبة', requester: 'سعد العلي', department: 'العمليات', date: '2024-01-14', priority: 'متوسطة' },
-    { id: 'CR-003', type: 'طلب مركبة', requester: 'محمد سالم', department: 'الصيانة', date: '2024-01-13', priority: 'عالية' },
+    { id: 'CR-001', type: 'car_request', requester: 'Ahmed Mohammed', department: 'Operations', date: '2024-01-15', priority: 'high' },
+    { id: 'CR-002', type: 'car_request', requester: 'Saad Al-Ali', department: 'Operations', date: '2024-01-14', priority: 'medium' },
+    { id: 'CR-003', type: 'car_request', requester: 'Mohammed Salem', department: 'Maintenance', date: '2024-01-13', priority: 'high' },
   ],
   maintenance: [
-    { id: 'MR-001', type: 'صيانة', vehicle: 'ABC 1234', description: 'تغيير زيت', cost: '500 ريال', date: '2024-01-15' },
-    { id: 'MR-002', type: 'صيانة', vehicle: 'XYZ 5678', description: 'فحص شامل', cost: '1200 ريال', date: '2024-01-14' },
+    { id: 'MR-001', type: 'maintenance', vehicle: 'ABC 1234', description: 'Oil change', cost: '500 SAR', date: '2024-01-15' },
+    { id: 'MR-002', type: 'maintenance', vehicle: 'XYZ 5678', description: 'Full inspection', cost: '1200 SAR', date: '2024-01-14' },
   ],
   inventory: [
-    { id: 'PR-001', type: 'شراء قطع', item: 'فلتر زيت (10)', requestedBy: 'الكراج', cost: '800 ريال', date: '2024-01-15' },
-    { id: 'PR-002', type: 'شراء قطع', item: 'إطارات (4)', requestedBy: 'الصيانة', cost: '2400 ريال', date: '2024-01-14' },
+    { id: 'PR-001', type: 'purchase', item: 'Oil Filter (10)', requestedBy: 'Garage', cost: '800 SAR', date: '2024-01-15' },
+    { id: 'PR-002', type: 'purchase', item: 'Tires (4)', requestedBy: 'Maintenance', cost: '2400 SAR', date: '2024-01-14' },
   ],
   carInventory: [
-    { id: 'CI-001', type: 'إضافة مركبة', plate: 'NEW 1234', brand: 'Toyota Camry', requestedBy: 'الكراج', date: '2024-01-15' },
-    { id: 'CI-002', type: 'إضافة مركبة', plate: 'NEW 5678', brand: 'Hyundai Sonata', requestedBy: 'الإدارة', date: '2024-01-14' },
+    { id: 'CI-001', type: 'add_vehicle', plate: 'NEW 1234', brand: 'Toyota Camry', requestedBy: 'Garage', date: '2024-01-15' },
+    { id: 'CI-002', type: 'add_vehicle', plate: 'NEW 5678', brand: 'Hyundai Sonata', requestedBy: 'Admin', date: '2024-01-14' },
   ],
 };
 
@@ -95,7 +115,7 @@ export function AdminDashboard() {
 
   const stats = useMemo(() => {
     const totalVehicles = vehicles.length;
-    const activeVehicles = vehicles.filter(v => v.status === 'نشط').length;
+    const activeVehicles = vehicles.filter(v => v.status === 'active').length;
     const pendingApprovals = mockPendingApprovals.carRequests.length +
                             mockPendingApprovals.maintenance.length +
                             mockPendingApprovals.inventory.length +
@@ -276,7 +296,7 @@ export function AdminDashboard() {
             <td className="py-3 px-4 text-slate-600">{req.department}</td>
             <td className="py-3 px-4 text-slate-600">{req.date}</td>
             <td className="py-3 px-4">
-              <Badge type={req.priority === 'عالية' ? 'danger' : 'warning'}>{req.priority}</Badge>
+              <Badge type={req.priority === 'high' ? 'danger' : 'warning'}>{t(`priorities.${req.priority}`)}</Badge>
             </td>
           </tr>
         );
@@ -383,7 +403,7 @@ export function AdminDashboard() {
               </div>
               <div>
                 <p className="text-xs text-slate-500">{t('common.priority')}</p>
-                <Badge type={req.priority === 'عالية' ? 'danger' : 'warning'}>{req.priority}</Badge>
+                <Badge type={req.priority === 'high' ? 'danger' : 'warning'}>{t(`priorities.${req.priority}`)}</Badge>
               </div>
             </div>
           </div>
@@ -528,42 +548,42 @@ export function AdminDashboard() {
           </span>
         </div>
 
-        <GlassCard className="p-6">
-          {/* Tabs */}
-          <div className="flex flex-wrap gap-2 mb-6 border-b border-slate-200 pb-4">
-            {tabs.map((tab) => {
-              const Icon = tab.icon;
-              const count = mockPendingApprovals[tab.key].length;
-              const isActive = activeTab === tab.key;
+        <GlassCard>
+          {/* Tab Navigation */}
+          <div className="border-b border-slate-100">
+            <div className="flex">
+              {tabs.map((tab) => {
+                const count = mockPendingApprovals[tab.key].length;
+                const isActive = activeTab === tab.key;
 
-              return (
-                <button
-                  key={tab.key}
-                  onClick={() => {
-                    setActiveTab(tab.key);
-                    setSelectedItems(new Set());
-                  }}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all ${
-                    isActive
-                      ? `${tab.bgColor} ${tab.color} shadow-sm`
-                      : 'text-slate-600 hover:bg-slate-100'
-                  }`}
-                >
-                  <Icon size={18} />
-                  <span>{getTabLabel(tab.key)}</span>
-                  <span className={`px-2 py-0.5 rounded-full text-xs ${
-                    isActive ? 'bg-white/50' : 'bg-slate-200'
-                  }`}>
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
+                return (
+                  <button
+                    key={tab.key}
+                    onClick={() => {
+                      setActiveTab(tab.key);
+                      setSelectedItems(new Set());
+                    }}
+                    className={`px-6 py-3 text-sm font-medium transition-colors flex items-center gap-2 ${
+                      isActive
+                        ? 'text-emerald-600 border-b-2 border-emerald-600'
+                        : 'text-slate-500 hover:text-slate-700'
+                    }`}
+                  >
+                    {getTabLabel(tab.key)}
+                    {count > 0 && (
+                      <span className="bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                        {count}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* Bulk Actions */}
           {selectedItems.size > 0 && (
-            <div className="flex items-center gap-3 mb-4 p-3 bg-blue-50 rounded-xl">
+            <div className="flex items-center gap-3 mx-6 mt-4 p-3 bg-blue-50 rounded-xl">
               <span className="text-sm text-blue-700 font-medium">
                 {t('dashboards.admin.selectedCount', { count: selectedItems.size })}
               </span>
@@ -608,32 +628,75 @@ export function AdminDashboard() {
         </GlassCard>
       </div>
 
-      {/* Recent Activity */}
-      <GlassCard className="p-6">
-        <h3 className="font-bold text-slate-800 mb-4">{t('dashboards.admin.recentActivity')}</h3>
-        <div className="space-y-3">
-          {[
-            { action: t('dashboards.admin.carRequestApproved'), user: t('dashboards.admin.theManager'), time: t('dashboards.admin.minutesAgo', { count: 5 }), type: 'success' },
-            { action: t('dashboards.admin.newMaintenanceRequest'), user: t('dashboards.admin.theGarage'), time: t('dashboards.admin.minutesAgo', { count: 15 }), type: 'info' },
-            { action: t('dashboards.admin.vehicleReturned'), user: t('dashboards.admin.theOperations'), time: t('dashboards.admin.minutesAgo', { count: 30 }), type: 'success' },
-            { action: t('dashboards.admin.partsOrderRequest'), user: t('dashboards.admin.theMaintenance'), time: t('dashboards.admin.hourAgo'), type: 'warning' },
-          ].map((activity, i) => (
-            <div key={i} className="flex items-center justify-between p-3 bg-slate-50 rounded-xl">
-              <div className="flex items-center gap-3">
-                <div className={`w-2 h-2 rounded-full ${
-                  activity.type === 'success' ? 'bg-emerald-500' :
-                  activity.type === 'warning' ? 'bg-amber-500' : 'bg-blue-500'
-                }`} />
-                <div>
-                  <p className="text-sm font-medium text-slate-800">{activity.action}</p>
-                  <p className="text-xs text-slate-500">{activity.user}</p>
-                </div>
-              </div>
-              <span className="text-xs text-slate-400">{activity.time}</span>
-            </div>
-          ))}
+      {/* Recent Approved Requests */}
+      <div>
+        <div className="flex items-center gap-2 mb-4">
+          <History size={20} className="text-slate-400" />
+          <h3 className="font-bold text-slate-800">{t('dashboards.admin.recentApprovals')}</h3>
         </div>
-      </GlassCard>
+
+        <GlassCard className="p-6">
+          {mockApprovedRequests.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="text-xs text-slate-500 border-b border-slate-200">
+                  <th className="py-3 px-4 text-start font-semibold">{t('dashboards.admin.requestId')}</th>
+                  <th className="py-3 px-4 text-start font-semibold">{t('dashboards.admin.requestType')}</th>
+                  <th className="py-3 px-4 text-start font-semibold">{t('common.description')}</th>
+                  <th className="py-3 px-4 text-start font-semibold">{t('dashboards.admin.requester')}</th>
+                  <th className="py-3 px-4 text-start font-semibold">{t('dashboards.admin.approvedAt')}</th>
+                  <th className="py-3 px-4 text-start font-semibold">{t('dashboards.admin.approvedBy')}</th>
+                </tr>
+              </thead>
+              <tbody className="text-sm">
+                {mockApprovedRequests.map((request) => {
+                  const typeLabels: Record<ApprovedRequestType, string> = {
+                    carRequest: t('dashboards.admin.carRequests'),
+                    maintenance: t('dashboards.admin.maintenanceRequests'),
+                    inventory: t('dashboards.admin.purchaseRequests'),
+                    addVehicle: t('dashboards.admin.addVehicleRequests'),
+                  };
+                  const typeIcons: Record<ApprovedRequestType, typeof Car> = {
+                    carRequest: Car,
+                    maintenance: Wrench,
+                    inventory: Package,
+                    addVehicle: TrendingUp,
+                  };
+                  const typeColors: Record<ApprovedRequestType, string> = {
+                    carRequest: 'bg-blue-100 text-blue-700',
+                    maintenance: 'bg-amber-100 text-amber-700',
+                    inventory: 'bg-purple-100 text-purple-700',
+                    addVehicle: 'bg-emerald-100 text-emerald-700',
+                  };
+                  const Icon = typeIcons[request.type];
+
+                  return (
+                    <tr key={request.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                      <td className="py-3 px-4 font-medium text-slate-800">{request.id}</td>
+                      <td className="py-3 px-4">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${typeColors[request.type]}`}>
+                          <Icon size={14} />
+                          {typeLabels[request.type]}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-slate-600">{request.description}</td>
+                      <td className="py-3 px-4 text-slate-600">{request.requester}</td>
+                      <td className="py-3 px-4 text-slate-600">{request.approvedAt}</td>
+                      <td className="py-3 px-4 text-slate-600">{request.approvedBy}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-8 text-slate-400">
+            {t('dashboards.admin.noApprovedRequests')}
+          </div>
+          )}
+        </GlassCard>
+      </div>
 
       {/* Approval Modal */}
       <Modal
