@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Car,
   Plus,
@@ -16,7 +16,9 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { StatCard, Badge, GlassCard } from '../../components/ui';
+import { StatCard, Badge, GlassCard, Pagination } from '../../components/ui';
+
+const ITEMS_PER_PAGE = 10;
 import { useApp } from '../../contexts/AppContext';
 import { carRequests as initialCarRequests } from '../../data';
 import type { CarRequest, CarRequestStatus, Driver } from '../../types';
@@ -37,6 +39,8 @@ export function OperationDashboard() {
   const [dateTo, setDateTo] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'recent'>('all');
   const [activeView, setActiveView] = useState<'requests' | 'drivers'>('requests');
+  const [requestsPage, setRequestsPage] = useState(1);
+  const [driversPage, setDriversPage] = useState(1);
 
   // Modal states
   const [showFormModal, setShowFormModal] = useState(false);
@@ -183,6 +187,29 @@ export function OperationDashboard() {
     });
   }, [drivers, driverSearchTerm]);
 
+  // Pagination for drivers
+  const driversTotalPages = Math.max(1, Math.ceil(filteredDrivers.length / ITEMS_PER_PAGE));
+  const paginatedDrivers = useMemo(() => {
+    const start = (driversPage - 1) * ITEMS_PER_PAGE;
+    return filteredDrivers.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredDrivers, driversPage]);
+
+  // Pagination for requests
+  const requestsTotalPages = Math.max(1, Math.ceil(filteredRequests.length / ITEMS_PER_PAGE));
+  const paginatedRequests = useMemo(() => {
+    const start = (requestsPage - 1) * ITEMS_PER_PAGE;
+    return filteredRequests.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredRequests, requestsPage]);
+
+  // Reset pages when filters change
+  useEffect(() => {
+    setRequestsPage(1);
+  }, [searchTerm, filterStatus, dateFrom, dateTo]);
+
+  useEffect(() => {
+    setDriversPage(1);
+  }, [driverSearchTerm]);
+
   // Driver handlers
   const handleAddDriver = () => {
     setEditingDriver(null);
@@ -238,7 +265,7 @@ export function OperationDashboard() {
     ? pendingActions
     : activeTab === 'recent'
       ? recentActivity
-      : filteredRequests;
+      : paginatedRequests;
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-top-2 duration-700">
@@ -430,7 +457,7 @@ export function OperationDashboard() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {filteredDrivers.map((driver) => (
+                  {paginatedDrivers.map((driver) => (
                     <tr key={driver.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-6 py-4 font-bold text-emerald-600 text-sm">{driver.id}</td>
                       <td className="px-6 py-4 text-sm text-slate-800 font-medium">{driver.name}</td>
@@ -470,7 +497,7 @@ export function OperationDashboard() {
 
             {/* Mobile Cards */}
             <div className="md:hidden divide-y divide-slate-100">
-              {filteredDrivers.map((driver) => (
+              {paginatedDrivers.map((driver) => (
                 <div key={driver.id} className="p-4">
                   <div className="flex items-start justify-between mb-3">
                     <div>
@@ -529,6 +556,15 @@ export function OperationDashboard() {
                 )}
               </div>
             )}
+
+            {/* Drivers Pagination */}
+            <Pagination
+              currentPage={driversPage}
+              totalPages={driversTotalPages}
+              onPageChange={setDriversPage}
+              totalItems={filteredDrivers.length}
+              itemsPerPage={ITEMS_PER_PAGE}
+            />
           </GlassCard>
         </>
       )}
@@ -733,6 +769,17 @@ export function OperationDashboard() {
                 : t('dashboards.operation.startByCreating')}
             </p>
           </div>
+        )}
+
+        {/* Requests Pagination - only show for 'all' tab */}
+        {activeTab === 'all' && (
+          <Pagination
+            currentPage={requestsPage}
+            totalPages={requestsTotalPages}
+            onPageChange={setRequestsPage}
+            totalItems={filteredRequests.length}
+            itemsPerPage={ITEMS_PER_PAGE}
+          />
         )}
       </GlassCard>}
 

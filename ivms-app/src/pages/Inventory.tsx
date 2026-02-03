@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import {
   Package,
   AlertTriangle,
@@ -9,26 +9,31 @@ import {
   LayoutGrid,
   List,
   CheckCircle2,
-  MoreVertical,
-  Eye,
   Pencil,
   Trash2,
   Filter
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Dropdown, ConfirmDialog, Modal } from '../components/ui';
+import { ConfirmDialog, Modal, Pagination } from '../components/ui';
 import { InventoryModal } from '../components/modals/InventoryModal';
 import { OrderModal } from '../components/modals/OrderModal';
 import { useApp } from '../contexts/AppContext';
+import { useAuth } from '../contexts/AuthContext';
+import { Department } from '../api/types';
 import type { InventoryItem } from '../types';
+
+const ITEMS_PER_PAGE = 10;
 
 export function Inventory() {
   const { t } = useTranslation();
   const { inventory, addInventoryItem, updateInventoryItem, deleteInventoryItem, orderInventoryItem } = useApp();
+  const { hasDepartment } = useAuth();
+  const isAdmin = hasDepartment(Department.ADMIN);
   const [searchQuery, setSearchQuery] = useState('');
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [stockFilter, setStockFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -54,6 +59,22 @@ export function Inventory() {
       return matchesSearch && matchesCategory && matchesStock;
     });
   }, [inventory, searchQuery, categoryFilter, stockFilter]);
+
+  // Pagination
+  const totalPages = Math.max(1, Math.ceil(filteredItems.length / ITEMS_PER_PAGE));
+  const paginatedItems = useMemo(() => {
+    const start = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredItems.slice(start, start + ITEMS_PER_PAGE);
+  }, [filteredItems, currentPage]);
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+  };
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, categoryFilter, stockFilter]);
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -88,30 +109,6 @@ export function Inventory() {
     setOrderingItem(null);
   };
 
-  const getDropdownItems = (item: InventoryItem) => [
-    {
-      label: t('pages.inventory.viewDetails'),
-      icon: <Eye size={16} />,
-      onClick: () => setViewingItem(item),
-    },
-    {
-      label: t('pages.inventory.edit'),
-      icon: <Pencil size={16} />,
-      onClick: () => setEditingItem(item),
-    },
-    {
-      label: t('pages.inventory.orderSupply'),
-      icon: <ShoppingCart size={16} />,
-      onClick: () => setOrderingItem(item),
-    },
-    {
-      label: t('pages.inventory.delete'),
-      icon: <Trash2 size={16} />,
-      onClick: () => setDeletingItem(item),
-      variant: 'danger' as const,
-    },
-  ];
-
   return (
     <div className="space-y-6 animate-fade-in">
       {/* Page Header */}
@@ -120,20 +117,22 @@ export function Inventory() {
           <h1 className="text-xl sm:text-2xl font-black text-slate-800 tracking-tight">{t('pages.inventory.title')}</h1>
           <p className="text-slate-500 text-xs sm:text-sm">{t('pages.inventory.description')} ({t('pages.inventory.itemCount', { count: inventory.length })})</p>
         </div>
-        <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
-          <button
-            onClick={() => inventory.length > 0 && setOrderingItem(inventory[0])}
-            className="hidden sm:flex bg-white border border-slate-200 text-slate-700 px-6 py-2.5 rounded-xl text-sm font-bold items-center gap-2 hover:bg-slate-50"
-          >
-            <ShoppingCart size={18} /> {t('pages.inventory.purchaseOrder')}
-          </button>
-          <button
-            onClick={() => setIsAddModalOpen(true)}
-            className="flex-1 sm:flex-none bg-slate-900 text-white px-4 sm:px-6 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg"
-          >
-            <Plus size={18} /> {t('pages.inventory.addItem')}
-          </button>
-        </div>
+        {!isAdmin && (
+          <div className="flex gap-2 sm:gap-3 w-full sm:w-auto">
+            <button
+              onClick={() => inventory.length > 0 && setOrderingItem(inventory[0])}
+              className="hidden sm:flex bg-white border border-slate-200 text-slate-700 px-6 py-2.5 rounded-xl text-sm font-bold items-center gap-2 hover:bg-slate-50"
+            >
+              <ShoppingCart size={18} /> {t('pages.inventory.purchaseOrder')}
+            </button>
+            <button
+              onClick={() => setIsAddModalOpen(true)}
+              className="flex-1 sm:flex-none bg-slate-900 text-white px-4 sm:px-6 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg"
+            >
+              <Plus size={18} /> {t('pages.inventory.addItem')}
+            </button>
+          </div>
+        )}
       </header>
 
       {/* Statistics Section */}
@@ -246,7 +245,7 @@ export function Inventory() {
           </div>
         )}
 
-        {viewMode === 'list' && filteredItems.length > 0 ? (
+        {viewMode === 'list' && paginatedItems.length > 0 ? (
           <>
             {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto">
@@ -258,12 +257,15 @@ export function Inventory() {
                     <th className="px-8 py-4">{t('pages.inventory.category')}</th>
                     <th className="px-8 py-4">{t('pages.inventory.available')}</th>
                     <th className="px-8 py-4">{t('common.status')}</th>
-                    <th className="px-8 py-4"></th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {filteredItems.map((item) => (
-                    <tr key={item.id} className="hover:bg-slate-50/50">
+                  {paginatedItems.map((item) => (
+                    <tr
+                      key={item.id}
+                      onClick={() => setViewingItem(item)}
+                      className="hover:bg-slate-50/50 cursor-pointer"
+                    >
                       <td className="px-8 py-5">
                         <p className="font-bold text-slate-800 text-sm">{item.name}</p>
                       </td>
@@ -271,34 +273,20 @@ export function Inventory() {
                       <td className="px-8 py-5 text-xs text-slate-500">{item.category}</td>
                       <td className="px-8 py-5">
                         <div className="flex flex-col">
-                          <span className="text-sm font-bold text-slate-700">{item.quantity} قطعة</span>
-                          <span className="text-[10px] text-slate-400">الحد الأدنى: {item.minStock}</span>
+                          <span className="text-sm font-bold text-slate-700">{item.quantity} {t('pages.inventory.piece')}</span>
+                          <span className="text-[10px] text-slate-400">{t('pages.inventory.minStock')}: {item.minStock}</span>
                         </div>
                       </td>
                       <td className="px-8 py-5">
                         {item.quantity <= item.minStock ? (
                           <span className="flex items-center gap-1.5 text-rose-600 text-[10px] font-bold bg-rose-50 px-2 py-1 rounded-md border border-rose-100 w-fit">
-                            <AlertTriangle size={12} /> منخفض جداً
+                            <AlertTriangle size={12} /> {t('pages.inventory.veryLow')}
                           </span>
                         ) : (
                           <span className="flex items-center gap-1.5 text-emerald-600 text-[10px] font-bold bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100 w-fit">
-                            <CheckCircle2 size={12} /> متوفر
+                            <CheckCircle2 size={12} /> {t('pages.inventory.available')}
                           </span>
                         )}
-                      </td>
-                      <td className="px-8 py-5 text-left">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => setOrderingItem(item)}
-                            className="text-xs font-bold text-emerald-600 hover:underline"
-                          >
-                            طلب توريد
-                          </button>
-                          <Dropdown
-                            trigger={<MoreVertical size={16} />}
-                            items={getDropdownItems(item)}
-                          />
-                        </div>
                       </td>
                     </tr>
                   ))}
@@ -308,54 +296,47 @@ export function Inventory() {
 
             {/* Mobile Cards for List View */}
             <div className="md:hidden divide-y divide-slate-100">
-              {filteredItems.map((item) => (
-                <div key={item.id} className="p-4 hover:bg-slate-50/50 transition-colors">
+              {paginatedItems.map((item) => (
+                <div
+                  key={item.id}
+                  onClick={() => setViewingItem(item)}
+                  className="p-4 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-slate-800 text-sm">{item.name}</p>
                       <p className="text-xs text-slate-500 mt-0.5">{item.category}</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      {item.quantity <= item.minStock ? (
-                        <span className="flex items-center gap-1 text-rose-600 text-[10px] font-bold bg-rose-50 px-2 py-1 rounded-md border border-rose-100 shrink-0">
-                          <AlertTriangle size={10} /> منخفض
-                        </span>
-                      ) : (
-                        <span className="flex items-center gap-1 text-emerald-600 text-[10px] font-bold bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100 shrink-0">
-                          <CheckCircle2 size={10} /> متوفر
-                        </span>
-                      )}
-                      <Dropdown
-                        trigger={<MoreVertical size={16} />}
-                        items={getDropdownItems(item)}
-                      />
-                    </div>
+                    {item.quantity <= item.minStock ? (
+                      <span className="flex items-center gap-1 text-rose-600 text-[10px] font-bold bg-rose-50 px-2 py-1 rounded-md border border-rose-100 shrink-0">
+                        <AlertTriangle size={10} /> {t('pages.inventory.lowStock')}
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1 text-emerald-600 text-[10px] font-bold bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100 shrink-0">
+                        <CheckCircle2 size={10} /> {t('pages.inventory.available')}
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center justify-between mt-3">
                     <div className="flex items-center gap-4">
                       <div>
                         <p className="text-lg font-bold text-slate-900">{item.quantity}</p>
-                        <p className="text-[10px] text-slate-400">الحد الأدنى: {item.minStock}</p>
+                        <p className="text-[10px] text-slate-400">{t('pages.inventory.minStock')}: {item.minStock}</p>
                       </div>
                       <p className="text-[10px] text-slate-400 font-mono">{item.id}</p>
                     </div>
-                    <button
-                      onClick={() => setOrderingItem(item)}
-                      className="text-xs font-bold text-emerald-600 hover:underline"
-                    >
-                      طلب توريد
-                    </button>
                   </div>
                 </div>
               ))}
             </div>
           </>
-        ) : viewMode === 'grid' && filteredItems.length > 0 ? (
+        ) : viewMode === 'grid' && paginatedItems.length > 0 ? (
           <div className="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {filteredItems.map((item) => (
+            {paginatedItems.map((item) => (
               <div
                 key={item.id}
-                className={`bg-white p-4 sm:p-5 rounded-2xl border shadow-sm hover:shadow-md transition-shadow ${
+                onClick={() => setViewingItem(item)}
+                className={`bg-white p-4 sm:p-5 rounded-2xl border shadow-sm hover:shadow-md transition-shadow cursor-pointer ${
                   item.quantity <= item.minStock ? 'border-rose-200' : 'border-slate-100'
                 }`}
               >
@@ -367,40 +348,37 @@ export function Inventory() {
                   >
                     <Package size={20} />
                   </div>
-                  <div className="flex items-center gap-1">
-                    {item.quantity <= item.minStock ? (
-                      <span className="flex items-center gap-1 text-rose-600 text-[10px] font-bold bg-rose-50 px-2 py-1 rounded-md border border-rose-100">
-                        <AlertTriangle size={10} /> منخفض
-                      </span>
-                    ) : (
-                      <span className="flex items-center gap-1 text-emerald-600 text-[10px] font-bold bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100">
-                        <CheckCircle2 size={10} /> متوفر
-                      </span>
-                    )}
-                    <Dropdown
-                      trigger={<MoreVertical size={14} />}
-                      items={getDropdownItems(item)}
-                    />
-                  </div>
+                  {item.quantity <= item.minStock ? (
+                    <span className="flex items-center gap-1 text-rose-600 text-[10px] font-bold bg-rose-50 px-2 py-1 rounded-md border border-rose-100">
+                      <AlertTriangle size={10} /> {t('pages.inventory.lowStock')}
+                    </span>
+                  ) : (
+                    <span className="flex items-center gap-1 text-emerald-600 text-[10px] font-bold bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100">
+                      <CheckCircle2 size={10} /> {t('pages.inventory.available')}
+                    </span>
+                  )}
                 </div>
                 <h3 className="text-slate-800 font-bold text-sm mb-1">{item.name}</h3>
                 <p className="text-slate-500 text-xs mb-3">{item.category}</p>
                 <div className="flex justify-between items-end">
                   <div>
                     <p className="text-xl sm:text-2xl font-bold text-slate-900">{item.quantity}</p>
-                    <p className="text-slate-400 text-[10px] sm:text-xs">الحد الأدنى: {item.minStock}</p>
+                    <p className="text-slate-400 text-[10px] sm:text-xs">{t('pages.inventory.minStock')}: {item.minStock}</p>
                   </div>
-                  <button
-                    onClick={() => setOrderingItem(item)}
-                    className="text-xs font-bold text-emerald-600 hover:underline"
-                  >
-                    طلب توريد
-                  </button>
                 </div>
               </div>
             ))}
           </div>
         ) : null}
+
+        {/* Pagination */}
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={handlePageChange}
+          totalItems={filteredItems.length}
+          itemsPerPage={ITEMS_PER_PAGE}
+        />
       </div>
 
       {/* Add Modal */}
@@ -494,6 +472,15 @@ export function Inventory() {
               >
                 <Pencil size={16} />
                 {t('pages.inventory.edit')}
+              </button>
+              <button
+                onClick={() => {
+                  setViewingItem(null);
+                  setDeletingItem(viewingItem);
+                }}
+                className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+              >
+                <Trash2 size={16} />
               </button>
             </div>
           </div>

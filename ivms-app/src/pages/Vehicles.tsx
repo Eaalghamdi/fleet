@@ -1,17 +1,24 @@
 import { useState, useMemo } from 'react';
-import { Search, Plus, Car, MoreVertical, Eye, Pencil, Trash2, FileDown, Filter } from 'lucide-react';
+import { Search, Plus, Car, Pencil, FileDown, Filter, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Badge, Dropdown, ConfirmDialog, Modal } from '../components/ui';
+import { Badge, ConfirmDialog, Modal, Pagination } from '../components/ui';
 import { VehicleModal } from '../components/modals/VehicleModal';
 import { useApp } from '../contexts/AppContext';
+import { useAuth } from '../contexts/AuthContext';
 import type { Vehicle } from '../types';
 
 export function Vehicles() {
   const { t } = useTranslation();
   const { vehicles, addVehicle, updateVehicle, deleteVehicle } = useApp();
+  const { hasDepartment } = useAuth();
+
+  // Operation users can only view vehicles, not add/edit/delete
+  const canManageVehicles = !hasDepartment('OPERATION');
   const [searchTerm, setSearchTerm] = useState('');
   const [modelFilter, setModelFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   // Modal states
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -25,15 +32,23 @@ export function Vehicles() {
     return Array.from(models).sort();
   }, [vehicles]);
 
-  const filteredVehicles = vehicles.filter((v) => {
-    const matchesSearch =
-      v.plate.includes(searchTerm) ||
-      v.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      v.driver.includes(searchTerm);
-    const matchesModel = modelFilter === 'all' || v.model === modelFilter;
-    const matchesStatus = statusFilter === 'all' || v.status === statusFilter;
-    return matchesSearch && matchesModel && matchesStatus;
-  });
+  const filteredVehicles = useMemo(() => {
+    return vehicles.filter((v) => {
+      const matchesSearch =
+        v.plate.includes(searchTerm) ||
+        v.brand.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        v.driver.includes(searchTerm);
+      const matchesModel = modelFilter === 'all' || v.model === modelFilter;
+      const matchesStatus = statusFilter === 'all' || v.status === statusFilter;
+      return matchesSearch && matchesModel && matchesStatus;
+    });
+  }, [vehicles, searchTerm, modelFilter, statusFilter]);
+
+  const totalPages = Math.ceil(filteredVehicles.length / itemsPerPage);
+  const paginatedVehicles = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredVehicles.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredVehicles, currentPage, itemsPerPage]);
 
   const handleAdd = (data: Omit<Vehicle, 'id'>) => {
     addVehicle(data);
@@ -80,33 +95,14 @@ export function Vehicles() {
 
   const getTranslatedStatus = (status: string) => {
     switch (status) {
-      case 'نشط':
-        return t('dashboards.garage.statusActive');
-      case 'صيانة':
-        return t('dashboards.garage.statusMaintenance');
+      case 'active':
+        return t('vehicleStatuses.active');
+      case 'maintenance':
+        return t('vehicleStatuses.maintenance');
       default:
-        return t('dashboards.garage.statusInactive');
+        return t('vehicleStatuses.inactive');
     }
   };
-
-  const getDropdownItems = (vehicle: Vehicle) => [
-    {
-      label: t('pages.vehicles.viewDetails'),
-      icon: <Eye size={16} />,
-      onClick: () => setViewingVehicle(vehicle),
-    },
-    {
-      label: t('pages.vehicles.edit'),
-      icon: <Pencil size={16} />,
-      onClick: () => setEditingVehicle(vehicle),
-    },
-    {
-      label: t('pages.vehicles.delete'),
-      icon: <Trash2 size={16} />,
-      onClick: () => setDeletingVehicle(vehicle),
-      variant: 'danger' as const,
-    },
-  ];
 
   return (
     <div className="space-y-6 animate-fade-in">
@@ -131,7 +127,7 @@ export function Vehicles() {
                 type="text"
                 placeholder={t('pages.vehicles.searchPlaceholder')}
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1); }}
                 className="w-full pr-10 pl-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
               />
             </div>
@@ -143,12 +139,14 @@ export function Vehicles() {
                 <FileDown size={16} />
                 {t('pages.vehicles.exportExcel')}
               </button>
-              <button
-                onClick={() => setIsAddModalOpen(true)}
-                className="flex-1 sm:flex-none px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/30"
-              >
-                <Plus size={18} /> {t('pages.vehicles.addVehicle')}
-              </button>
+              {canManageVehicles && (
+                <button
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="flex-1 sm:flex-none px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/30"
+                >
+                  <Plus size={18} /> {t('pages.vehicles.addVehicle')}
+                </button>
+              )}
             </div>
           </div>
 
@@ -162,7 +160,7 @@ export function Vehicles() {
               {/* Model Filter */}
               <select
                 value={modelFilter}
-                onChange={(e) => setModelFilter(e.target.value)}
+                onChange={(e) => { setModelFilter(e.target.value); setCurrentPage(1); }}
                 className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all min-w-[140px]"
               >
                 <option value="all">{t('pages.vehicles.allModels')}</option>
@@ -176,13 +174,13 @@ export function Vehicles() {
               {/* Status Filter */}
               <select
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
                 className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all min-w-[140px]"
               >
                 <option value="all">{t('pages.vehicles.allStatuses')}</option>
-                <option value="نشط">{t('dashboards.garage.statusActive')}</option>
-                <option value="صيانة">{t('dashboards.garage.statusMaintenance')}</option>
-                <option value="متوقف">{t('dashboards.garage.statusInactive')}</option>
+                <option value="active">{t('vehicleStatuses.active')}</option>
+                <option value="maintenance">{t('vehicleStatuses.maintenance')}</option>
+                <option value="inactive">{t('vehicleStatuses.inactive')}</option>
               </select>
             </div>
           </div>
@@ -196,7 +194,7 @@ export function Vehicles() {
             <p className="text-sm text-gray-400 mb-4">
               {searchTerm ? t('pages.vehicles.noSearchResults') : t('pages.vehicles.startByAdding')}
             </p>
-            {!searchTerm && (
+            {!searchTerm && canManageVehicles && (
               <button
                 onClick={() => setIsAddModalOpen(true)}
                 className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700"
@@ -218,12 +216,15 @@ export function Vehicles() {
                   <th className="px-6 py-4">{t('dashboards.garage.year')}</th>
                   <th className="px-6 py-4">{t('dashboards.garage.mileage')}</th>
                   <th className="px-6 py-4">{t('dashboards.garage.status')}</th>
-                  <th className="px-6 py-4"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
-                {filteredVehicles.map((v) => (
-                  <tr key={v.id} className="hover:bg-slate-50/50 transition-colors">
+                {paginatedVehicles.map((v) => (
+                  <tr
+                    key={v.id}
+                    onClick={() => setViewingVehicle(v)}
+                    className="hover:bg-slate-50/50 transition-colors cursor-pointer"
+                  >
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-500">
@@ -238,15 +239,9 @@ export function Vehicles() {
                     <td className="px-6 py-4 text-sm text-slate-600">{v.year}</td>
                     <td className="px-6 py-4 text-sm text-slate-600">{v.mileage.toLocaleString()} {t('common.kilometers')}</td>
                     <td className="px-6 py-4">
-                      <Badge type={v.status === 'نشط' ? 'success' : v.status === 'صيانة' ? 'warning' : 'danger'}>
+                      <Badge type={v.status === 'active' ? 'success' : v.status === 'maintenance' ? 'warning' : 'danger'}>
                         {getTranslatedStatus(v.status)}
                       </Badge>
-                    </td>
-                    <td className="px-6 py-4">
-                      <Dropdown
-                        trigger={<MoreVertical size={18} />}
-                        items={getDropdownItems(v)}
-                      />
                     </td>
                   </tr>
                 ))}
@@ -258,8 +253,12 @@ export function Vehicles() {
         {/* Mobile Cards */}
         {filteredVehicles.length > 0 && (
           <div className="md:hidden divide-y divide-slate-100">
-            {filteredVehicles.map((v) => (
-              <div key={v.id} className="p-4 hover:bg-slate-50/50 transition-colors">
+            {paginatedVehicles.map((v) => (
+              <div
+                key={v.id}
+                onClick={() => setViewingVehicle(v)}
+                className="p-4 hover:bg-slate-50/50 transition-colors cursor-pointer"
+              >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-slate-100 rounded-lg flex items-center justify-center text-slate-500">
@@ -270,15 +269,9 @@ export function Vehicles() {
                       <p className="text-xs text-slate-500">{v.plate}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Badge type={v.status === 'نشط' ? 'success' : v.status === 'صيانة' ? 'warning' : 'danger'}>
-                      {getTranslatedStatus(v.status)}
-                    </Badge>
-                    <Dropdown
-                      trigger={<MoreVertical size={18} />}
-                      items={getDropdownItems(v)}
-                    />
-                  </div>
+                  <Badge type={v.status === 'active' ? 'success' : v.status === 'maintenance' ? 'warning' : 'danger'}>
+                    {getTranslatedStatus(v.status)}
+                  </Badge>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
@@ -293,6 +286,17 @@ export function Vehicles() {
               </div>
             ))}
           </div>
+        )}
+
+        {/* Pagination */}
+        {filteredVehicles.length > 0 && (
+          <Pagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            totalItems={filteredVehicles.length}
+            itemsPerPage={itemsPerPage}
+          />
         )}
       </div>
 
@@ -333,7 +337,7 @@ export function Vehicles() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-slate-400 mb-1">{t('dashboards.garage.status')}</p>
-                <Badge type={viewingVehicle.status === 'نشط' ? 'success' : viewingVehicle.status === 'صيانة' ? 'warning' : 'danger'}>
+                <Badge type={viewingVehicle.status === 'active' ? 'success' : viewingVehicle.status === 'maintenance' ? 'warning' : 'danger'}>
                   {getTranslatedStatus(viewingVehicle.status)}
                 </Badge>
               </div>
@@ -352,16 +356,29 @@ export function Vehicles() {
             </div>
 
             <div className="flex gap-3 pt-4 border-t border-slate-100">
-              <button
-                onClick={() => {
-                  setViewingVehicle(null);
-                  setEditingVehicle(viewingVehicle);
-                }}
-                className="flex-1 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
-              >
-                <Pencil size={16} />
-                {t('pages.vehicles.edit')}
-              </button>
+              {canManageVehicles && (
+                <>
+                  <button
+                    onClick={() => {
+                      setViewingVehicle(null);
+                      setEditingVehicle(viewingVehicle);
+                    }}
+                    className="flex-1 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Pencil size={16} />
+                    {t('pages.vehicles.edit')}
+                  </button>
+                  <button
+                    onClick={() => {
+                      setViewingVehicle(null);
+                      setDeletingVehicle(viewingVehicle);
+                    }}
+                    className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </>
+              )}
               <button
                 onClick={() => setViewingVehicle(null)}
                 className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"

@@ -12,3 +12,4 @@ export { ToastContainer } from './Toast';
 export { ConfirmDialog } from './ConfirmDialog';
 export { Dropdown } from './Dropdown';
 export { LanguageSwitcher } from './LanguageSwitcher';
+export { Pagination } from './Pagination';

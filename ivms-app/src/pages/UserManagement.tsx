@@ -14,7 +14,7 @@ import {
   EyeOff,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { GlassCard, Modal, Badge, ConfirmDialog } from '../components/ui';
+import { GlassCard, Modal, Badge, ConfirmDialog, Pagination } from '../components/ui';
 import { useApp } from '../contexts/AppContext';
 
 type Department = 'ADMIN' | 'OPERATION' | 'GARAGE' | 'MAINTENANCE';
@@ -33,61 +33,24 @@ interface User {
 
 // Mock users data
 const mockUsers: User[] = [
-  {
-    id: '1',
-    username: 'admin',
-    fullName: 'Ahmed Al-Rashid',
-    email: 'admin@ivms.com',
-    phone: '+966 50 123 4567',
-    department: 'ADMIN',
-    isActive: true,
-    createdAt: '2024-01-01',
-    lastLogin: '2024-02-01 09:30',
-  },
-  {
-    id: '2',
-    username: 'operations1',
-    fullName: 'Mohammed Salem',
-    email: 'operations@ivms.com',
-    phone: '+966 50 234 5678',
-    department: 'OPERATION',
-    isActive: true,
-    createdAt: '2024-01-05',
-    lastLogin: '2024-02-01 08:15',
-  },
-  {
-    id: '3',
-    username: 'garage1',
-    fullName: 'Saad Al-Ali',
-    email: 'garage@ivms.com',
-    phone: '+966 50 345 6789',
-    department: 'GARAGE',
-    isActive: true,
-    createdAt: '2024-01-10',
-    lastLogin: '2024-01-31 14:45',
-  },
-  {
-    id: '4',
-    username: 'maintenance1',
-    fullName: 'Khalid Hassan',
-    email: 'maintenance@ivms.com',
-    phone: '+966 50 456 7890',
-    department: 'MAINTENANCE',
-    isActive: true,
-    createdAt: '2024-01-15',
-    lastLogin: '2024-01-30 11:20',
-  },
-  {
-    id: '5',
-    username: 'operations2',
-    fullName: 'Fahad Al-Otaibi',
-    email: 'fahad@ivms.com',
-    phone: '+966 50 567 8901',
-    department: 'OPERATION',
-    isActive: false,
-    createdAt: '2024-01-20',
-    lastLogin: null,
-  },
+  { id: '1', username: 'admin', fullName: 'Ahmed Al-Rashid', email: 'admin@ivms.com', phone: '+966 50 123 4567', department: 'ADMIN', isActive: true, createdAt: '2024-01-01', lastLogin: '2024-02-01 09:30' },
+  { id: '2', username: 'operations1', fullName: 'Mohammed Salem', email: 'operations@ivms.com', phone: '+966 50 234 5678', department: 'OPERATION', isActive: true, createdAt: '2024-01-05', lastLogin: '2024-02-01 08:15' },
+  { id: '3', username: 'garage1', fullName: 'Saad Al-Ali', email: 'garage@ivms.com', phone: '+966 50 345 6789', department: 'GARAGE', isActive: true, createdAt: '2024-01-10', lastLogin: '2024-01-31 14:45' },
+  { id: '4', username: 'maintenance1', fullName: 'Khalid Hassan', email: 'maintenance@ivms.com', phone: '+966 50 456 7890', department: 'MAINTENANCE', isActive: true, createdAt: '2024-01-15', lastLogin: '2024-01-30 11:20' },
+  { id: '5', username: 'operations2', fullName: 'Fahad Al-Otaibi', email: 'fahad@ivms.com', phone: '+966 50 567 8901', department: 'OPERATION', isActive: false, createdAt: '2024-01-20', lastLogin: null },
+  { id: '6', username: 'garage2', fullName: 'Omar Al-Zahrani', email: 'omar@ivms.com', phone: '+966 50 678 9012', department: 'GARAGE', isActive: true, createdAt: '2024-01-22', lastLogin: '2024-02-01 07:00' },
+  { id: '7', username: 'maintenance2', fullName: 'Youssef Al-Harbi', email: 'youssef@ivms.com', phone: '+966 50 789 0123', department: 'MAINTENANCE', isActive: true, createdAt: '2024-01-25', lastLogin: '2024-01-31 16:30' },
+  { id: '8', username: 'admin2', fullName: 'Ibrahim Al-Dosari', email: 'ibrahim@ivms.com', phone: '+966 50 890 1234', department: 'ADMIN', isActive: true, createdAt: '2024-01-28', lastLogin: '2024-02-01 10:15' },
+  { id: '9', username: 'operations3', fullName: 'Abdullah Al-Mutairi', email: 'abdullah@ivms.com', phone: '+966 50 901 2345', department: 'OPERATION', isActive: true, createdAt: '2024-02-01', lastLogin: '2024-02-01 11:00' },
+  { id: '10', username: 'garage3', fullName: 'Hassan Al-Ghamdi', email: 'hassan@ivms.com', phone: '+966 50 012 3456', department: 'GARAGE', isActive: false, createdAt: '2024-02-03', lastLogin: null },
+  { id: '11', username: 'maintenance3', fullName: 'Faisal Al-Shehri', email: 'faisal@ivms.com', phone: '+966 50 111 2222', department: 'MAINTENANCE', isActive: true, createdAt: '2024-02-05', lastLogin: '2024-02-05 09:00' },
+  { id: '12', username: 'operations4', fullName: 'Majed Al-Qahtani', email: 'majed@ivms.com', phone: '+966 50 222 3333', department: 'OPERATION', isActive: true, createdAt: '2024-02-07', lastLogin: '2024-02-07 14:20' },
+  { id: '13', username: 'garage4', fullName: 'Turki Al-Ahmadi', email: 'turki@ivms.com', phone: '+966 50 333 4444', department: 'GARAGE', isActive: true, createdAt: '2024-02-10', lastLogin: '2024-02-10 08:45' },
+  { id: '14', username: 'maintenance4', fullName: 'Nasser Al-Malki', email: 'nasser@ivms.com', phone: '+966 50 444 5555', department: 'MAINTENANCE', isActive: false, createdAt: '2024-02-12', lastLogin: '2024-02-12 13:30' },
+  { id: '15', username: 'operations5', fullName: 'Bandar Al-Subaie', email: 'bandar@ivms.com', phone: '+966 50 555 6666', department: 'OPERATION', isActive: true, createdAt: '2024-02-15', lastLogin: '2024-02-15 10:00' },
+  { id: '16', username: 'admin3', fullName: 'Sultan Al-Tamimi', email: 'sultan@ivms.com', phone: '+966 50 666 7777', department: 'ADMIN', isActive: true, createdAt: '2024-02-18', lastLogin: '2024-02-18 15:45' },
+  { id: '17', username: 'garage5', fullName: 'Waleed Al-Dossary', email: 'waleed@ivms.com', phone: '+966 50 777 8888', department: 'GARAGE', isActive: true, createdAt: '2024-02-20', lastLogin: '2024-02-20 07:30' },
+  { id: '18', username: 'maintenance5', fullName: 'Rakan Al-Harthy', email: 'rakan@ivms.com', phone: '+966 50 888 9999', department: 'MAINTENANCE', isActive: true, createdAt: '2024-02-22', lastLogin: '2024-02-22 12:00' },
 ];
 
 interface UserFormData {
@@ -130,6 +93,10 @@ export function UserManagement() {
   const [detailsModalOpen, setDetailsModalOpen] = useState(false);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set());
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   const filteredUsers = useMemo(() => {
     return users.filter(user => {
       const matchesSearch =
@@ -145,6 +112,12 @@ export function UserManagement() {
       return matchesSearch && matchesDepartment && matchesStatus;
     });
   }, [users, searchQuery, departmentFilter, statusFilter]);
+
+  const totalPages = Math.ceil(filteredUsers.length / itemsPerPage);
+  const paginatedUsers = useMemo(() => {
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    return filteredUsers.slice(startIndex, startIndex + itemsPerPage);
+  }, [filteredUsers, currentPage, itemsPerPage]);
 
   const stats = useMemo(() => {
     return {
@@ -269,6 +242,48 @@ export function UserManagement() {
     );
   };
 
+  const handleSelectUser = (userId: string) => {
+    setSelectedUserIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(userId)) {
+        newSet.delete(userId);
+      } else {
+        newSet.add(userId);
+      }
+      return newSet;
+    });
+  };
+
+  const handleSelectAll = () => {
+    if (selectedUserIds.size === paginatedUsers.length) {
+      setSelectedUserIds(new Set());
+    } else {
+      setSelectedUserIds(new Set(paginatedUsers.map(u => u.id)));
+    }
+  };
+
+  const handleBulkDelete = () => {
+    setUsers(prev => prev.filter(u => !selectedUserIds.has(u.id)));
+    showToast(t('pages.userManagement.usersDeleted', { count: selectedUserIds.size }), 'success');
+    setSelectedUserIds(new Set());
+  };
+
+  const handleBulkActivate = () => {
+    setUsers(prev => prev.map(u =>
+      selectedUserIds.has(u.id) ? { ...u, isActive: true } : u
+    ));
+    showToast(t('pages.userManagement.usersActivated', { count: selectedUserIds.size }), 'success');
+    setSelectedUserIds(new Set());
+  };
+
+  const handleBulkDeactivate = () => {
+    setUsers(prev => prev.map(u =>
+      selectedUserIds.has(u.id) ? { ...u, isActive: false } : u
+    ));
+    showToast(t('pages.userManagement.usersDeactivated', { count: selectedUserIds.size }), 'success');
+    setSelectedUserIds(new Set());
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-top-2 duration-700">
       {/* Page Header */}
@@ -348,7 +363,7 @@ export function UserManagement() {
               type="text"
               placeholder={t('pages.userManagement.searchPlaceholder')}
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
               className="w-full ps-10 pe-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
             />
           </div>
@@ -356,7 +371,7 @@ export function UserManagement() {
           {/* Department Filter */}
           <select
             value={departmentFilter}
-            onChange={(e) => setDepartmentFilter(e.target.value)}
+            onChange={(e) => { setDepartmentFilter(e.target.value); setCurrentPage(1); }}
             className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
             <option value="all">{t('pages.userManagement.allDepartments')}</option>
@@ -369,7 +384,7 @@ export function UserManagement() {
           {/* Status Filter */}
           <select
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value)}
+            onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
             className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
           >
             <option value="all">{t('pages.userManagement.allStatuses')}</option>
@@ -381,11 +396,48 @@ export function UserManagement() {
 
       {/* Users Table */}
       <GlassCard>
+        {/* Bulk Actions Bar */}
+        {selectedUserIds.size > 0 && (
+          <div className="p-4 bg-blue-50 border-b border-blue-100 flex items-center justify-between">
+            <span className="text-sm font-medium text-blue-800">
+              {t('pages.userManagement.selectedCount', { count: selectedUserIds.size })}
+            </span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleBulkActivate}
+                className="px-3 py-1.5 bg-emerald-600 text-white text-sm font-medium rounded-lg hover:bg-emerald-700 transition-colors"
+              >
+                {t('pages.userManagement.activateSelected')}
+              </button>
+              <button
+                onClick={handleBulkDeactivate}
+                className="px-3 py-1.5 bg-slate-600 text-white text-sm font-medium rounded-lg hover:bg-slate-700 transition-colors"
+              >
+                {t('pages.userManagement.deactivateSelected')}
+              </button>
+              <button
+                onClick={handleBulkDelete}
+                className="px-3 py-1.5 bg-rose-600 text-white text-sm font-medium rounded-lg hover:bg-rose-700 transition-colors"
+              >
+                {t('pages.userManagement.deleteSelected')}
+              </button>
+            </div>
+          </div>
+        )}
+
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
               <tr className="text-xs text-slate-500 border-b border-slate-200">
-                <th className="py-3 px-4 text-start font-semibold">{t('pages.userManagement.user')}</th>
+                <th className="py-3 px-4 text-start font-semibold">
+                  <input
+                    type="checkbox"
+                    checked={paginatedUsers.length > 0 && selectedUserIds.size === paginatedUsers.length}
+                    onChange={handleSelectAll}
+                    className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                  />
+                </th>
+                <th className="py-3 px-4 text-start font-semibold">{t('pages.userManagement.fullName')}</th>
                 <th className="py-3 px-4 text-start font-semibold">{t('pages.userManagement.username')}</th>
                 <th className="py-3 px-4 text-start font-semibold">{t('pages.userManagement.department')}</th>
                 <th className="py-3 px-4 text-start font-semibold">{t('pages.userManagement.contact')}</th>
@@ -395,16 +447,19 @@ export function UserManagement() {
               </tr>
             </thead>
             <tbody className="text-sm">
-              {filteredUsers.length > 0 ? (
-                filteredUsers.map((user) => (
-                  <tr key={user.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+              {paginatedUsers.length > 0 ? (
+                paginatedUsers.map((user) => (
+                  <tr key={user.id} className={`border-b border-slate-100 hover:bg-slate-50 transition-colors ${selectedUserIds.has(user.id) ? 'bg-blue-50' : ''}`}>
                     <td className="py-3 px-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-emerald-400 to-emerald-600 flex items-center justify-center text-white font-bold text-sm">
-                          {user.fullName.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                        </div>
-                        <span className="font-medium text-slate-800">{user.fullName}</span>
-                      </div>
+                      <input
+                        type="checkbox"
+                        checked={selectedUserIds.has(user.id)}
+                        onChange={() => handleSelectUser(user.id)}
+                        className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                      />
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="font-medium text-slate-800">{user.fullName}</span>
                     </td>
                     <td className="py-3 px-4 text-slate-600">{user.username}</td>
                     <td className="py-3 px-4">
@@ -468,7 +523,7 @@ export function UserManagement() {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={7} className="py-12 text-center">
+                  <td colSpan={8} className="py-12 text-center">
                     <Users size={48} className="mx-auto text-slate-300 mb-3" />
                     <p className="text-slate-500 font-medium">
                       {searchQuery || departmentFilter !== 'all' || statusFilter !== 'all'
@@ -486,6 +541,13 @@ export function UserManagement() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={currentPage}
+          totalPages={totalPages}
+          onPageChange={setCurrentPage}
+          totalItems={filteredUsers.length}
+          itemsPerPage={itemsPerPage}
+        />
       </GlassCard>
 
       {/* Add/Edit User Modal */}
