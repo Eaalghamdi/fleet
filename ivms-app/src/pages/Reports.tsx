@@ -1,175 +1,411 @@
 import { useState, useMemo } from 'react';
 import {
-  FileText,
   Download,
-  Search,
-  CheckCircle,
-  Clock,
-  AlertTriangle,
+  Calendar,
+  Car,
+  Wrench,
+  Package,
+  TrendingUp,
+  History,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
+import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { GlassCard } from '../components/ui';
-import { DocumentModal } from '../components/modals/DocumentModal';
 import { useApp } from '../contexts/AppContext';
 
-interface Document {
-  title: string;
-  vehicle: string;
-  expiry: string;
-  status: string;
-  days: number;
+// Mock report history data
+interface ReportHistoryItem {
+  id: string;
+  type: ReportType;
+  dateRange: { start: string; end: string };
+  generatedAt: string;
+  generatedBy: string;
 }
 
-const initialDocuments: Document[] = [
-  {
-    title: 'استمارة مركبة',
-    vehicle: 'تويوتا هايلكس (أ ب ج 1234)',
-    expiry: '2026-02-15',
-    status: 'near-expiry',
-    days: 22,
-  },
-  {
-    title: 'تأمين شامل',
-    vehicle: 'نيسان باترول (س ص ع 5678)',
-    expiry: '2026-08-10',
-    status: 'valid',
-    days: 198,
-  },
-  {
-    title: 'فحص دوري',
-    vehicle: 'مرسيدس أكتروس (ح ط ك 9012)',
-    expiry: '2026-01-20',
-    status: 'expired',
-    days: -4,
-  },
-  {
-    title: 'رخصة تشغيل',
-    vehicle: 'هيونداي إلنترا (ل م ن 3456)',
-    expiry: '2026-05-01',
-    status: 'valid',
-    days: 97,
-  },
-  {
-    title: 'شهادة فحص فني',
-    vehicle: 'فورد F-150 (ق ر س 7890)',
-    expiry: '2026-01-28',
-    status: 'near-expiry',
-    days: 4,
-  },
-  {
-    title: 'تصريح نقل',
-    vehicle: 'ايسوزو NPR (ع غ ف 2468)',
-    expiry: '2026-03-15',
-    status: 'valid',
-    days: 50,
-  },
-];
+type ReportType = 'fleet' | 'carRequests' | 'maintenance' | 'inventory';
 
-const getStatusStyle = (status: string) => {
-  switch (status) {
-    case 'expired':
-      return {
-        border: 'border-rose-100',
-        icon: 'bg-rose-50 text-rose-600',
-        badge: 'bg-rose-600 text-white',
-        badgeText: 'منتهي',
-      };
-    case 'near-expiry':
-      return {
-        border: 'border-amber-100',
-        icon: 'bg-amber-50 text-amber-600',
-        badge: 'bg-amber-500 text-white',
-        badgeText: 'قرب الانتهاء',
-      };
-    default:
-      return {
-        border: 'border-slate-100',
-        icon: 'bg-slate-50 text-slate-400',
-        badge: '',
-        badgeText: '',
-      };
-  }
-};
+interface ReportStats {
+  fleet: {
+    totalVehicles: number;
+    available: number;
+    assigned: number;
+    inTransit: number;
+    underMaintenance: number;
+    utilizationRate: number;
+  };
+  carRequests: {
+    total: number;
+    pending: number;
+    approved: number;
+    rejected: number;
+    completed: number;
+    avgProcessingDays: number;
+  };
+  maintenance: {
+    total: number;
+    preventive: number;
+    corrective: number;
+    completed: number;
+    inProgress: number;
+    avgCompletionDays: number;
+  };
+  inventory: {
+    totalParts: number;
+    lowStock: number;
+    outOfStock: number;
+    totalValue: number;
+    categories: number;
+  };
+}
 
 export function Reports() {
   const { t } = useTranslation();
-  const { showToast, addNotification } = useApp();
-  const [documents, setDocuments] = useState<Document[]>(initialDocuments);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [selectedDocument, setSelectedDocument] = useState<Document | null>(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { vehicles, maintenance, inventory, showToast } = useApp();
 
-  // Filter documents by search term
-  const filteredDocuments = useMemo(() => {
-    if (!searchTerm) return documents;
-    const term = searchTerm.toLowerCase();
-    return documents.filter(doc =>
-      doc.vehicle.toLowerCase().includes(term) ||
-      doc.title.toLowerCase().includes(term)
-    );
-  }, [documents, searchTerm]);
+  const [dateRange, setDateRange] = useState({
+    start: new Date(new Date().setMonth(new Date().getMonth() - 1)).toISOString().split('T')[0],
+    end: new Date().toISOString().split('T')[0],
+  });
+  const [selectedReport, setSelectedReport] = useState<ReportType>('fleet');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [selectedHistoryReports, setSelectedHistoryReports] = useState<string[]>([]);
 
-  // Calculate stats
-  const stats = useMemo(() => {
-    const valid = documents.filter(d => d.status === 'valid').length;
-    const nearExpiry = documents.filter(d => d.status === 'near-expiry').length;
-    const expired = documents.filter(d => d.status === 'expired').length;
-    const total = documents.length;
-    const compliance = total > 0 ? ((valid / total) * 100).toFixed(1) : 0;
+  // Mock report history - will be replaced with actual data later
+  const [reportHistory, setReportHistory] = useState<ReportHistoryItem[]>([
+    { id: 'RPT-001', type: 'fleet', dateRange: { start: '2024-01-01', end: '2024-01-31' }, generatedAt: '2024-01-31 14:30', generatedBy: 'Admin' },
+    { id: 'RPT-002', type: 'maintenance', dateRange: { start: '2024-01-01', end: '2024-01-31' }, generatedAt: '2024-01-30 10:15', generatedBy: 'Admin' },
+    { id: 'RPT-003', type: 'carRequests', dateRange: { start: '2024-01-15', end: '2024-01-31' }, generatedAt: '2024-01-28 16:45', generatedBy: 'Operations' },
+    { id: 'RPT-004', type: 'inventory', dateRange: { start: '2024-01-01', end: '2024-01-31' }, generatedAt: '2024-01-25 09:00', generatedBy: 'Garage' },
+    { id: 'RPT-005', type: 'fleet', dateRange: { start: '2023-12-01', end: '2023-12-31' }, generatedAt: '2024-01-02 11:30', generatedBy: 'Admin' },
+  ]);
 
-    return { valid, nearExpiry, expired, compliance };
-  }, [documents]);
+  // Calculate statistics from actual data
+  const stats: ReportStats = useMemo(() => {
+    const activeVehicles = vehicles.filter(v => v.status === 'active').length;
+    const maintenanceVehicles = vehicles.filter(v => v.status === 'maintenance').length;
 
-  const handleDownloadReport = () => {
-    const report = `
-سجل الامتثال والتراخيص
-======================
+    const completedMaintenance = maintenance.filter((m) => m.status === 'completed').length;
+    const inProgressMaintenance = maintenance.filter((m) => m.status === 'in_progress').length;
+    const preventiveMaintenance = maintenance.filter((m) => m.type === 'preventive').length;
+    const correctiveMaintenance = maintenance.filter((m) => m.type === 'corrective').length;
 
-إحصائيات:
-- تراخيص سارية: ${stats.valid}
-- تجديد وشيك: ${stats.nearExpiry}
-- منتهية الصلاحية: ${stats.expired}
-- نسبة الامتثال: ${stats.compliance}%
+    const lowStockItems = inventory.filter(i => i.quantity <= i.minStock && i.quantity > 0).length;
+    const outOfStockItems = inventory.filter(i => i.quantity === 0).length;
+    const categories = new Set(inventory.map(i => i.category)).size;
 
-المستندات:
-${documents.map(doc => `
-${doc.title}
-  المركبة: ${doc.vehicle}
-  تاريخ الانتهاء: ${doc.expiry}
-  الحالة: ${doc.status === 'valid' ? 'ساري' : doc.status === 'near-expiry' ? 'قرب الانتهاء' : 'منتهي'}
-  ${doc.days >= 0 ? `متبقي: ${doc.days} يوم` : `منتهي منذ: ${Math.abs(doc.days)} يوم`}
-`).join('\n')}
+    return {
+      fleet: {
+        totalVehicles: vehicles.length,
+        available: activeVehicles,
+        assigned: 0,
+        inTransit: 0,
+        underMaintenance: maintenanceVehicles,
+        utilizationRate: vehicles.length > 0 ? Math.round((activeVehicles / vehicles.length) * 100) : 0,
+      },
+      carRequests: {
+        total: 24,
+        pending: 3,
+        approved: 18,
+        rejected: 2,
+        completed: 15,
+        avgProcessingDays: 1.5,
+      },
+      maintenance: {
+        total: maintenance.length,
+        preventive: preventiveMaintenance,
+        corrective: correctiveMaintenance,
+        completed: completedMaintenance,
+        inProgress: inProgressMaintenance,
+        avgCompletionDays: 2.3,
+      },
+      inventory: {
+        totalParts: inventory.reduce((sum, i) => sum + i.quantity, 0),
+        lowStock: lowStockItems,
+        outOfStock: outOfStockItems,
+        totalValue: 45000,
+        categories: categories,
+      },
+    };
+  }, [vehicles, maintenance, inventory]);
 
-تاريخ التقرير: ${new Date().toLocaleDateString('ar-SA')}
-    `.trim();
+  const reportTypes = [
+    {
+      id: 'fleet' as ReportType,
+      icon: Car,
+      labelKey: 'pages.reports.fleetOverview',
+      color: 'emerald'
+    },
+    {
+      id: 'carRequests' as ReportType,
+      icon: TrendingUp,
+      labelKey: 'pages.reports.carRequestsSummary',
+      color: 'blue'
+    },
+    {
+      id: 'maintenance' as ReportType,
+      icon: Wrench,
+      labelKey: 'pages.reports.maintenanceSummary',
+      color: 'amber'
+    },
+    {
+      id: 'inventory' as ReportType,
+      icon: Package,
+      labelKey: 'pages.reports.partsInventory',
+      color: 'purple'
+    },
+  ];
 
-    const blob = new Blob(['\ufeff' + report], { type: 'text/plain;charset=utf-8;' });
+  // Reusable function to generate PDF for a specific report type and date range
+  const generateReportPDF = async (
+    reportType: ReportType,
+    reportDateRange: { start: string; end: string },
+    fileName: string
+  ) => {
+    const pdfDoc = await PDFDocument.create();
+    const timesRoman = await pdfDoc.embedFont(StandardFonts.TimesRoman);
+    const timesRomanBold = await pdfDoc.embedFont(StandardFonts.TimesRomanBold);
+
+    const page = pdfDoc.addPage([595.28, 841.89]); // A4 size
+    const { height } = page.getSize();
+
+    let yPosition = height - 50;
+    const leftMargin = 50;
+
+    // Title
+    const reportTitles: Record<ReportType, string> = {
+      fleet: 'Fleet Overview Report',
+      carRequests: 'Car Requests Summary Report',
+      maintenance: 'Maintenance Summary Report',
+      inventory: 'Parts Inventory Report',
+    };
+
+    page.drawText(reportTitles[reportType], {
+      x: leftMargin,
+      y: yPosition,
+      size: 24,
+      font: timesRomanBold,
+      color: rgb(0.1, 0.1, 0.1),
+    });
+
+    yPosition -= 30;
+
+    // Date range
+    page.drawText(`Report Period: ${reportDateRange.start} to ${reportDateRange.end}`, {
+      x: leftMargin,
+      y: yPosition,
+      size: 12,
+      font: timesRoman,
+      color: rgb(0.4, 0.4, 0.4),
+    });
+
+    yPosition -= 15;
+    page.drawText(`Generated: ${new Date().toISOString().split('T')[0]}`, {
+      x: leftMargin,
+      y: yPosition,
+      size: 12,
+      font: timesRoman,
+      color: rgb(0.4, 0.4, 0.4),
+    });
+
+    yPosition -= 40;
+
+    // Divider line
+    page.drawLine({
+      start: { x: leftMargin, y: yPosition },
+      end: { x: 545, y: yPosition },
+      thickness: 1,
+      color: rgb(0.8, 0.8, 0.8),
+    });
+
+    yPosition -= 30;
+
+    // Report content based on type
+    const drawStat = (label: string, value: string | number, indent = 0) => {
+      page.drawText(`${label}:`, {
+        x: leftMargin + indent,
+        y: yPosition,
+        size: 12,
+        font: timesRomanBold,
+        color: rgb(0.2, 0.2, 0.2),
+      });
+      page.drawText(String(value), {
+        x: leftMargin + 200 + indent,
+        y: yPosition,
+        size: 12,
+        font: timesRoman,
+        color: rgb(0.3, 0.3, 0.3),
+      });
+      yPosition -= 25;
+    };
+
+    switch (reportType) {
+      case 'fleet':
+        page.drawText('Fleet Statistics', {
+          x: leftMargin,
+          y: yPosition,
+          size: 16,
+          font: timesRomanBold,
+          color: rgb(0.1, 0.4, 0.3),
+        });
+        yPosition -= 30;
+        drawStat('Total Vehicles', stats.fleet.totalVehicles);
+        drawStat('Available', stats.fleet.available);
+        drawStat('Assigned', stats.fleet.assigned);
+        drawStat('In Transit', stats.fleet.inTransit);
+        drawStat('Under Maintenance', stats.fleet.underMaintenance);
+        drawStat('Utilization Rate', `${stats.fleet.utilizationRate}%`);
+        break;
+
+      case 'carRequests':
+        page.drawText('Car Request Statistics', {
+          x: leftMargin,
+          y: yPosition,
+          size: 16,
+          font: timesRomanBold,
+          color: rgb(0.1, 0.3, 0.5),
+        });
+        yPosition -= 30;
+        drawStat('Total Requests', stats.carRequests.total);
+        drawStat('Pending', stats.carRequests.pending);
+        drawStat('Approved', stats.carRequests.approved);
+        drawStat('Rejected', stats.carRequests.rejected);
+        drawStat('Completed', stats.carRequests.completed);
+        drawStat('Avg. Processing Time', `${stats.carRequests.avgProcessingDays} days`);
+        break;
+
+      case 'maintenance':
+        page.drawText('Maintenance Statistics', {
+          x: leftMargin,
+          y: yPosition,
+          size: 16,
+          font: timesRomanBold,
+          color: rgb(0.6, 0.4, 0.1),
+        });
+        yPosition -= 30;
+        drawStat('Total Requests', stats.maintenance.total);
+        drawStat('Preventive', stats.maintenance.preventive);
+        drawStat('Corrective', stats.maintenance.corrective);
+        drawStat('Completed', stats.maintenance.completed);
+        drawStat('In Progress', stats.maintenance.inProgress);
+        drawStat('Avg. Completion Time', `${stats.maintenance.avgCompletionDays} days`);
+        break;
+
+      case 'inventory':
+        page.drawText('Parts Inventory Statistics', {
+          x: leftMargin,
+          y: yPosition,
+          size: 16,
+          font: timesRomanBold,
+          color: rgb(0.4, 0.2, 0.5),
+        });
+        yPosition -= 30;
+        drawStat('Total Parts Count', stats.inventory.totalParts);
+        drawStat('Categories', stats.inventory.categories);
+        drawStat('Low Stock Items', stats.inventory.lowStock);
+        drawStat('Out of Stock Items', stats.inventory.outOfStock);
+        drawStat('Estimated Value', `SAR ${stats.inventory.totalValue.toLocaleString()}`);
+        break;
+    }
+
+    // Footer
+    page.drawText('Fleet Management System - Confidential', {
+      x: leftMargin,
+      y: 30,
+      size: 10,
+      font: timesRoman,
+      color: rgb(0.5, 0.5, 0.5),
+    });
+
+    const pdfBytes = await pdfDoc.save();
+    const blob = new Blob([new Uint8Array(pdfBytes)], { type: 'application/pdf' });
     const link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = 'compliance-report.txt';
+    link.download = fileName;
     link.click();
-    showToast(t('pages.reports.complianceLogDownloaded'), 'success');
   };
 
-  const handleUpdateDocument = (doc: Document) => {
-    setSelectedDocument(doc);
-    setIsModalOpen(true);
+  // Download selected historical reports
+  const downloadSelectedReports = async () => {
+    setIsGenerating(true);
+    try {
+      for (const id of selectedHistoryReports) {
+        const report = reportHistory.find(r => r.id === id);
+        if (report) {
+          const fileName = `${report.id}-${report.type}-report-${report.dateRange.start}-to-${report.dateRange.end}.pdf`;
+          await generateReportPDF(report.type, report.dateRange, fileName);
+        }
+      }
+      showToast(t('pages.reports.reportsDownloaded', { count: selectedHistoryReports.length }), 'success');
+      setSelectedHistoryReports([]);
+    } catch (error) {
+      console.error('Error downloading reports:', error);
+      showToast(t('pages.reports.reportError'), 'error');
+    } finally {
+      setIsGenerating(false);
+    }
   };
 
-  const handleDocumentSubmit = (updatedDoc: Document) => {
-    setDocuments(prev =>
-      prev.map(d =>
-        d.title === updatedDoc.title && d.vehicle === updatedDoc.vehicle
-          ? updatedDoc
-          : d
-      )
-    );
-    showToast('تم تحديث المستند بنجاح', 'success');
-    addNotification({
-      title: 'تحديث مستند',
-      message: `تم تحديث ${updatedDoc.title} للمركبة ${updatedDoc.vehicle}`,
-      type: 'success',
-    });
+  const generatePDF = async () => {
+    setIsGenerating(true);
+
+    try {
+      const fileName = `${selectedReport}-report-${dateRange.start}-to-${dateRange.end}.pdf`;
+      await generateReportPDF(selectedReport, dateRange, fileName);
+
+      // Add to report history
+      const newReport: ReportHistoryItem = {
+        id: `RPT-${String(reportHistory.length + 1).padStart(3, '0')}`,
+        type: selectedReport,
+        dateRange: { start: dateRange.start, end: dateRange.end },
+        generatedAt: new Date().toLocaleString('en-US', {
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
+        }),
+        generatedBy: 'Admin',
+      };
+      setReportHistory([newReport, ...reportHistory]);
+
+      showToast(t('pages.reports.reportGenerated'), 'success');
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      showToast(t('pages.reports.reportError'), 'error');
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
+  const getReportTypeLabel = (type: ReportType) => {
+    const labels: Record<ReportType, string> = {
+      fleet: t('pages.reports.fleetOverview'),
+      carRequests: t('pages.reports.carRequestsSummary'),
+      maintenance: t('pages.reports.maintenanceSummary'),
+      inventory: t('pages.reports.partsInventory'),
+    };
+    return labels[type];
+  };
+
+  const getReportTypeIcon = (type: ReportType) => {
+    const icons: Record<ReportType, typeof Car> = {
+      fleet: Car,
+      carRequests: TrendingUp,
+      maintenance: Wrench,
+      inventory: Package,
+    };
+    return icons[type];
+  };
+
+  const getReportTypeColor = (type: ReportType) => {
+    const colors: Record<ReportType, string> = {
+      fleet: 'emerald',
+      carRequests: 'blue',
+      maintenance: 'amber',
+      inventory: 'purple',
+    };
+    return colors[type];
   };
 
   return (
@@ -182,143 +418,157 @@ ${doc.title}
           </h1>
           <p className="text-slate-500 text-xs sm:text-sm">{t('pages.reports.description')}</p>
         </div>
-        <button
-          onClick={handleDownloadReport}
-          className="w-full sm:w-auto bg-slate-900 text-white px-4 sm:px-6 py-2.5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 shadow-lg shadow-slate-900/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
-        >
-          <Download size={18} /> {t('pages.reports.downloadComplianceLog')}
-        </button>
       </header>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-        {/* Valid Licenses */}
-        <GlassCard className="p-4 sm:p-6">
-          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-            <div className="p-1.5 sm:p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-              <CheckCircle size={18} />
+      {/* Date Range Selection */}
+      <GlassCard className="p-4 sm:p-6">
+        <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 flex-1">
+            <div className="flex items-center gap-2">
+              <Calendar size={20} className="text-slate-400" />
+              <span className="text-sm font-bold text-slate-700">{t('pages.reports.dateRange')}</span>
             </div>
-            <h5 className="text-xs sm:text-sm font-bold text-slate-800">{t('pages.reports.validLicenses')}</h5>
-          </div>
-          <p className="text-xl sm:text-2xl font-black text-slate-800">{stats.valid}</p>
-        </GlassCard>
-
-        {/* Near Expiry */}
-        <GlassCard className="p-4 sm:p-6">
-          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-            <div className="p-1.5 sm:p-2 bg-amber-50 text-amber-600 rounded-lg">
-              <Clock size={18} />
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-slate-500">{t('pages.reports.from')}</label>
+                <input
+                  type="date"
+                  value={dateRange.start}
+                  onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                  className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                />
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-xs text-slate-500">{t('pages.reports.to')}</label>
+                <input
+                  type="date"
+                  value={dateRange.end}
+                  onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                  className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
+                />
+              </div>
             </div>
-            <h5 className="text-xs sm:text-sm font-bold text-slate-800">{t('pages.reports.nearRenewal')}</h5>
           </div>
-          <p className="text-xl sm:text-2xl font-black text-slate-800">{stats.nearExpiry}</p>
-        </GlassCard>
-
-        {/* Expired */}
-        <GlassCard className="p-4 sm:p-6">
-          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-            <div className="p-1.5 sm:p-2 bg-rose-50 text-rose-600 rounded-lg">
-              <AlertTriangle size={18} />
-            </div>
-            <h5 className="text-xs sm:text-sm font-bold text-slate-800">{t('pages.reports.expired')}</h5>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 w-full lg:w-auto">
+            <select
+              value={selectedReport}
+              onChange={(e) => setSelectedReport(e.target.value as ReportType)}
+              className="px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 w-full sm:w-auto"
+            >
+              {reportTypes.map((report) => (
+                <option key={report.id} value={report.id}>
+                  {t(report.labelKey)}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={generatePDF}
+              disabled={isGenerating}
+              className="flex items-center justify-center gap-2 px-6 py-2 bg-slate-900 text-white rounded-xl text-sm font-bold shadow-lg shadow-slate-900/20 hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+            >
+              <Download size={18} />
+              {isGenerating ? t('pages.reports.generating') : t('pages.reports.generatePdfReport')}
+            </button>
           </div>
-          <p className="text-xl sm:text-2xl font-black text-slate-800">{stats.expired}</p>
-        </GlassCard>
-
-        {/* Overall Compliance */}
-        <GlassCard className="p-4 sm:p-6">
-          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
-            <div className="p-1.5 sm:p-2 bg-emerald-50 text-emerald-600 rounded-lg">
-              <CheckCircle size={18} />
-            </div>
-            <h5 className="text-xs sm:text-sm font-bold text-slate-800">{t('pages.reports.complianceRate')}</h5>
-          </div>
-          <p className="text-xl sm:text-2xl font-black text-slate-800">{stats.compliance}%</p>
-        </GlassCard>
-      </div>
-
-      {/* Documents Section */}
-      <GlassCard className="rounded-2xl sm:rounded-3xl">
-        {/* Section Header */}
-        <div className="p-4 sm:p-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-100">
-          <h4 className="font-black text-slate-800 text-sm sm:text-base">{t('pages.reports.licensesAndDocuments')}</h4>
-          <div className="relative w-full md:w-auto">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-            <input
-              type="text"
-              placeholder={t('pages.reports.vehicleNumber')}
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="bg-slate-50 border border-slate-200 rounded-xl py-2 pr-10 pl-4 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none w-full md:w-48 transition-all"
-            />
-          </div>
-        </div>
-
-        {/* Documents Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 p-4 sm:p-6 bg-slate-50/50">
-          {filteredDocuments.length === 0 ? (
-            <div className="col-span-full text-center py-12">
-              <FileText size={48} className="mx-auto text-slate-300 mb-4" />
-              <p className="text-slate-500">{t('pages.reports.noMatchingDocuments')}</p>
-            </div>
-          ) : (
-            filteredDocuments.map((doc, idx) => {
-              const style = getStatusStyle(doc.status);
-              return (
-                <div
-                  key={idx}
-                  className={`bg-white p-4 sm:p-5 rounded-2xl border-2 transition-all hover:shadow-md ${style.border}`}
-                >
-                  {/* Header */}
-                  <div className="flex justify-between items-start mb-3 sm:mb-4">
-                    <div className={`p-2.5 sm:p-3 rounded-xl ${style.icon}`}>
-                      <FileText size={20} />
-                    </div>
-                    {doc.status !== 'valid' && (
-                      <span className={`text-[10px] font-black px-2 py-1 rounded-md ${style.badge}`}>
-                        {style.badgeText}
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Content */}
-                  <h5 className="font-bold text-slate-800 text-sm sm:text-base">{doc.title}</h5>
-                  <p className="text-xs text-slate-500 mb-3 sm:mb-4 truncate">{doc.vehicle}</p>
-
-                  {/* Footer */}
-                  <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-slate-100">
-                    <div className="flex flex-col">
-                      <span className="text-[9px] sm:text-[10px] text-slate-400 font-bold uppercase">{t('pages.reports.expiryDate')}</span>
-                      <span className="text-xs sm:text-sm font-bold text-slate-700">{doc.expiry}</span>
-                    </div>
-                    <div className="text-left rtl:text-right">
-                      <p className={`text-[10px] sm:text-xs font-black ${doc.days < 0 ? 'text-rose-600' : 'text-slate-500'}`}>
-                        {doc.days < 0 ? t('pages.reports.expiredAgo', { days: Math.abs(doc.days) }) : t('pages.reports.daysRemaining', { days: doc.days })}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Action Button */}
-                  <button
-                    onClick={() => handleUpdateDocument(doc)}
-                    className="w-full mt-3 sm:mt-4 py-2 sm:py-2.5 bg-slate-50 hover:bg-emerald-50 hover:text-emerald-600 text-slate-600 rounded-xl text-xs font-bold transition-colors"
-                  >
-                    {t('pages.reports.updateDocument')}
-                  </button>
-                </div>
-              );
-            })
-          )}
         </div>
       </GlassCard>
 
-      {/* Document Modal */}
-      <DocumentModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        document={selectedDocument}
-        onSubmit={handleDocumentSubmit}
-      />
+      {/* Report History */}
+      <div>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2">
+            <History size={20} className="text-slate-400" />
+            <h3 className="font-bold text-slate-800">{t('pages.reports.reportHistory')}</h3>
+          </div>
+          {selectedHistoryReports.length > 0 && (
+            <button
+              onClick={downloadSelectedReports}
+              disabled={isGenerating}
+              className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Download size={16} />
+              {isGenerating
+                ? t('pages.reports.generating')
+                : t('pages.reports.downloadSelected', { count: selectedHistoryReports.length })}
+            </button>
+          )}
+        </div>
+
+        <GlassCard className="p-4 sm:p-6">
+          {reportHistory.length > 0 ? (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="text-xs text-slate-500 border-b border-slate-200">
+                  <th className="py-3 px-4 text-center font-semibold">
+                    <input
+                      type="checkbox"
+                      checked={selectedHistoryReports.length === reportHistory.length && reportHistory.length > 0}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setSelectedHistoryReports(reportHistory.map(r => r.id));
+                        } else {
+                          setSelectedHistoryReports([]);
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                    />
+                  </th>
+                  <th className="py-3 px-4 text-start font-semibold">{t('pages.reports.reportId')}</th>
+                  <th className="py-3 px-4 text-start font-semibold">{t('pages.reports.reportType')}</th>
+                  <th className="py-3 px-4 text-start font-semibold">{t('pages.reports.dateRange')}</th>
+                  <th className="py-3 px-4 text-start font-semibold">{t('pages.reports.generatedAt')}</th>
+                </tr>
+              </thead>
+              <tbody className="text-sm">
+                {reportHistory.map((report) => {
+                  const Icon = getReportTypeIcon(report.type);
+                  const color = getReportTypeColor(report.type);
+                  const colorClasses: Record<string, string> = {
+                    emerald: 'bg-emerald-100 text-emerald-700',
+                    blue: 'bg-blue-100 text-blue-700',
+                    amber: 'bg-amber-100 text-amber-700',
+                    purple: 'bg-purple-100 text-purple-700',
+                  };
+
+                  return (
+                    <tr key={report.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                      <td className="py-3 px-4 text-center">
+                        <input
+                          type="checkbox"
+                          checked={selectedHistoryReports.includes(report.id)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedHistoryReports([...selectedHistoryReports, report.id]);
+                            } else {
+                              setSelectedHistoryReports(selectedHistoryReports.filter(id => id !== report.id));
+                            }
+                          }}
+                          className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500"
+                        />
+                      </td>
+                      <td className="py-3 px-4 font-medium text-slate-800">{report.id}</td>
+                      <td className="py-3 px-4">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${colorClasses[color]}`}>
+                          <Icon size={14} />
+                          {getReportTypeLabel(report.type)}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-slate-600">{report.dateRange.start} - {report.dateRange.end}</td>
+                      <td className="py-3 px-4 text-slate-600">{report.generatedAt}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="text-center py-8 text-slate-400">
+            {t('pages.reports.noReportHistory')}
+          </div>
+          )}
+        </GlassCard>
+      </div>
     </div>
   );
 }

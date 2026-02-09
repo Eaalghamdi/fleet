@@ -1,4 +1,5 @@
 import { Bell, X, Check, CheckCheck, Trash2 } from 'lucide-react';
+import { useTranslation } from 'react-i18next';
 import { useApp } from '../../contexts/AppContext';
 
 interface NotificationsPanelProps {
@@ -7,6 +8,7 @@ interface NotificationsPanelProps {
 }
 
 export function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps) {
+  const { t } = useTranslation();
   const { notifications, markNotificationRead, markAllNotificationsRead, deleteNotification } = useApp();
 
   const unreadCount = notifications.filter(n => !n.read).length;
@@ -19,10 +21,10 @@ export function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps)
     const hours = Math.floor(diff / 3600000);
     const days = Math.floor(diff / 86400000);
 
-    if (minutes < 1) return 'الآن';
-    if (minutes < 60) return `منذ ${minutes} دقيقة`;
-    if (hours < 24) return `منذ ${hours} ساعة`;
-    return `منذ ${days} يوم`;
+    if (minutes < 1) return t('notifications.now');
+    if (minutes < 60) return t('notifications.minutesAgo', { count: minutes });
+    if (hours < 24) return t('notifications.hoursAgo', { count: hours });
+    return t('notifications.daysAgo', { count: days });
   };
 
   if (!isOpen) return null;
@@ -41,7 +43,7 @@ export function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps)
         <div className="p-4 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <Bell size={18} className="text-slate-600" />
-            <h3 className="font-bold text-slate-800">الإشعارات</h3>
+            <h3 className="font-bold text-slate-800">{t('notifications.notifications')}</h3>
             {unreadCount > 0 && (
               <span className="px-2 py-0.5 bg-rose-500 text-white text-xs font-bold rounded-full">
                 {unreadCount}
@@ -53,7 +55,7 @@ export function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps)
               <button
                 onClick={markAllNotificationsRead}
                 className="p-1.5 hover:bg-slate-200 rounded-lg text-slate-500 hover:text-emerald-600 transition-colors"
-                title="قراءة الكل"
+                title={t('notifications.markAllRead')}
               >
                 <CheckCheck size={16} />
               </button>
@@ -72,7 +74,7 @@ export function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps)
           {notifications.length === 0 ? (
             <div className="p-8 text-center">
               <Bell size={32} className="mx-auto text-slate-300 mb-2" />
-              <p className="text-sm text-slate-500">لا توجد إشعارات</p>
+              <p className="text-sm text-slate-500">{t('notifications.noNotifications')}</p>
             </div>
           ) : (
             <div className="divide-y divide-slate-100">
@@ -104,14 +106,14 @@ export function NotificationsPanel({ isOpen, onClose }: NotificationsPanelProps)
                             onClick={() => markNotificationRead(notification.id)}
                             className="text-[10px] text-emerald-600 hover:text-emerald-700 font-medium flex items-center gap-1"
                           >
-                            <Check size={12} /> تحديد كمقروء
+                            <Check size={12} /> {t('notifications.markAsRead')}
                           </button>
                         )}
                         <button
                           onClick={() => deleteNotification(notification.id)}
                           className="text-[10px] text-slate-400 hover:text-rose-600 font-medium flex items-center gap-1"
                         >
-                          <Trash2 size={12} /> حذف
+                          <Trash2 size={12} /> {t('notifications.delete')}
                         </button>
                       </div>
                     </div>

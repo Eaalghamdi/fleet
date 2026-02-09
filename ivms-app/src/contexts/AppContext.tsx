@@ -1,7 +1,7 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 import i18next from 'i18next';
 import { useLocalStorage } from '../hooks/useLocalStorage';
-import { vehicleData, maintenanceRequests, inventoryData } from '../data';
+import { vehicleData, maintenanceRequests, inventoryData, driverData } from '../data';
 import type { Vehicle, MaintenanceRequest, InventoryItem, Notification, Toast, Driver } from '../types';
 
 interface AppContextType {
@@ -54,7 +54,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [vehicles, setVehicles] = useLocalStorage<Vehicle[]>('ivms-vehicles', vehicleData);
   const [maintenance, setMaintenance] = useLocalStorage<MaintenanceRequest[]>('ivms-maintenance', maintenanceRequests);
   const [inventory, setInventory] = useLocalStorage<InventoryItem[]>('ivms-inventory', inventoryData);
-  const [drivers, setDrivers] = useLocalStorage<Driver[]>('ivms-drivers', []);
+  const [drivers, setDrivers] = useLocalStorage<Driver[]>('ivms-drivers', driverData);
   const [notifications, setNotifications] = useLocalStorage<Notification[]>('ivms-notifications', []);
 
   // Toasts are transient, not persisted

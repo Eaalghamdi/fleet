@@ -5,40 +5,44 @@ import {
   Fuel,
   Activity,
   Download,
-  MoreVertical,
   ChevronLeft,
   ChevronRight,
-  Eye,
-  Pencil,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import {
   StatCard,
-  Badge,
   GlassCard,
   IconButton,
   HealthIndicator,
   MetricCard,
-  Dropdown,
 } from '../components/ui';
 import { useApp } from '../contexts/AppContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { fuelData } from '../data';
+import { getVehicleExpiryAlerts, getDriverExpiryAlerts } from '../utils/expiryUtils';
+import { ExpiryAlertsSection } from '../components/dashboard/ExpiryAlertsSection';
 
 export function Dashboard() {
   const { t } = useTranslation();
   const { direction } = useLanguage();
-  const { vehicles, maintenance, showToast } = useApp();
+  const { vehicles, drivers, maintenance, showToast } = useApp();
   const isRTL = direction === 'rtl';
+
+  // Critical expiry alerts (expired items only)
+  const criticalAlerts = useMemo(() => {
+    const vehicleAlerts = getVehicleExpiryAlerts(vehicles);
+    const driverAlerts = getDriverExpiryAlerts(drivers);
+    return [...vehicleAlerts, ...driverAlerts].filter(a => a.status === 'expired');
+  }, [vehicles, drivers]);
 
   // Calculate statistics from real data
   const stats = useMemo(() => {
     const totalVehicles = vehicles.length;
-    const activeVehicles = vehicles.filter(v => v.status === 'نشط').length;
-    const maintenanceVehicles = vehicles.filter(v => v.status === 'صيانة').length;
-    const inactiveVehicles = vehicles.filter(v => v.status === 'متوقف').length;
+    const activeVehicles = vehicles.filter(v => v.status === 'active').length;
+    const maintenanceVehicles = vehicles.filter(v => v.status === 'maintenance').length;
+    const inactiveVehicles = vehicles.filter(v => v.status === 'inactive').length;
     const totalMaintenance = maintenance.length;
-    const criticalMaintenance = maintenance.filter(m => m.priority === 'عالية' && m.status !== 'مكتمل').length;
+    const criticalMaintenance = maintenance.filter(m => m.priority === 'high' && m.status !== 'completed').length;
     const readinessRate = totalVehicles > 0 ? Math.round((activeVehicles / totalVehicles) * 100) : 0;
     const totalFuel = vehicles.reduce((acc, v) => acc + v.fuel, 0);
     const avgFuel = totalVehicles > 0 ? Math.round(totalFuel / totalVehicles) : 0;
@@ -95,19 +99,6 @@ ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}
     showToast(t('pages.dashboard.reportDownloaded'), 'success');
   };
 
-  const getVehicleDropdownItems = (vehicle: typeof topVehicles[0]) => [
-    {
-      label: t('pages.dashboard.viewVehicleDetails'),
-      icon: <Eye size={16} />,
-      onClick: () => showToast(`${t('pages.dashboard.viewVehicleDetails')} ${vehicle.plate}`, 'info'),
-    },
-    {
-      label: t('pages.dashboard.editVehicle'),
-      icon: <Pencil size={16} />,
-      onClick: () => showToast(`${t('pages.dashboard.editVehicle')} ${vehicle.plate}`, 'info'),
-    },
-  ];
-
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-top-2 duration-700">
       {/* Stats Cards Row */}
@@ -142,6 +133,9 @@ ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}
         />
       </div>
 
+      {/* Critical Expiry Alerts */}
+      <ExpiryAlertsSection alerts={criticalAlerts} maxVisible={3} />
+
       {/* Fleet Analysis Section */}
       <div className="space-y-6 pt-2">
         <div className="flex items-center justify-between">
@@ -157,7 +151,11 @@ ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {topVehicles.map((v, i) => (
-              <GlassCard key={i} className="group hover:border-emerald-200 transition-all">
+              <GlassCard
+                key={i}
+                className="group hover:border-emerald-200 transition-all cursor-pointer"
+                onClick={() => showToast(`${t('pages.dashboard.viewVehicleDetails')} ${v.plate}`, 'info')}
+              >
                 <div className="p-5 space-y-4">
                   {/* Vehicle Header */}
                   <div className="flex justify-between items-start">
@@ -170,10 +168,6 @@ ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}
                         <p className="text-xs text-slate-500">{v.brand}</p>
                       </div>
                     </div>
-                    <Dropdown
-                      trigger={<MoreVertical size={18} />}
-                      items={getVehicleDropdownItems(v)}
-                    />
                   </div>
 
                   {/* Health Indicator */}
@@ -194,9 +188,9 @@ ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}
                 {/* Card Footer */}
                 <div className="px-5 py-3 bg-slate-50 border-t border-slate-100 flex justify-between items-center group-hover:bg-emerald-50/50 transition-colors">
                   <span className="text-[10px] font-bold text-slate-400">{t('pages.dashboard.lastInspection')}</span>
-                  <button className="text-xs font-bold text-emerald-700 flex items-center gap-1 hover:gap-2 transition-all">
+                  <span className="text-xs font-bold text-emerald-700 flex items-center gap-1 group-hover:gap-2 transition-all">
                     {t('pages.dashboard.details')} {isRTL ? <ChevronLeft size={14} /> : <ChevronRight size={14} />}
-                  </button>
+                  </span>
                 </div>
               </GlassCard>
             ))}
@@ -323,7 +317,7 @@ ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0 ${
-                      req.priority === 'عالية' ? 'bg-rose-100 text-rose-600' : 'bg-amber-100 text-amber-600'
+                      req.priority === 'high' ? 'bg-rose-100 text-rose-600' : 'bg-amber-100 text-amber-600'
                     }`}
                   >
                     <Wrench size={18} />
@@ -331,13 +325,15 @@ ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}
                   <div className="min-w-0">
                     <p className="text-xs sm:text-sm font-bold text-slate-800 truncate">{req.description}</p>
                     <p className="text-[10px] sm:text-xs text-slate-500 truncate">
-                      {req.vehicle} • {req.type}
+                      {req.vehicle} • {t(`maintenanceTypes.${req.type}`)}
                     </p>
                   </div>
                 </div>
-                <Badge type={req.status === 'مكتمل' ? 'success' : req.status === 'قيد التنفيذ' ? 'info' : 'warning'}>
-                  {req.status}
-                </Badge>
+                <span className={`text-xs font-medium ${
+                  req.status === 'completed' ? 'text-emerald-600' : req.status === 'in_progress' ? 'text-slate-600' : 'text-amber-600'
+                }`}>
+                  {t(`statuses.${req.status === 'in_progress' ? 'inProgress' : req.status === 'pending_approval' ? 'pendingApproval' : req.status}`)}
+                </span>
               </div>
             ))}
           </div>

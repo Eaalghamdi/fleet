@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Menu, Bell } from 'lucide-react';
 import { Sidebar, Header } from './components/layout';
-import { Dashboard, Vehicles, Maintenance, Inventory, Reports, Unauthorized, AdminDashboard, OperationDashboard, GarageDashboard, MaintenanceDashboard, Settings, UserManagement } from './pages';
+import { Dashboard, Vehicles, Maintenance, Inventory, Reports, Unauthorized, AdminDashboard, OperationDashboard, GarageDashboard, MaintenanceDashboard, Settings, UserManagement, Drivers } from './pages';
 import { AppProvider, useApp } from './contexts/AppContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
@@ -62,6 +62,8 @@ function AppContent() {
         return <Inventory />;
       case 'users':
         return <UserManagement />;
+      case 'drivers':
+        return <Drivers />;
       case 'reports':
         return <Reports />;
       case 'settings':

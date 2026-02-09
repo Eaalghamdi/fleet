@@ -12,8 +12,11 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { StatCard, Badge, GlassCard } from '../../components/ui';
+import { StatCard, GlassCard } from '../../components/ui';
 import { useApp } from '../../contexts/AppContext';
+import { AssignVehicleModal } from '../../components/modals/AssignVehicleModal';
+import { getVehicleExpiryAlerts } from '../../utils/expiryUtils';
+import { ExpiryAlertsSection } from '../../components/dashboard/ExpiryAlertsSection';
 
 // Mock data for pending assignments (Car Request data model)
 const mockPendingAssignments = [
@@ -62,6 +65,13 @@ export function GarageDashboard() {
   const navigate = useNavigate();
   const { vehicles, inventory, showToast } = useApp();
   const [activeTab, setActiveTab] = useState<'assignments' | 'returns' | 'spareParts'>('assignments');
+  const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
+  const [selectedRequest, setSelectedRequest] = useState<typeof mockPendingAssignments[0] | null>(null);
+
+  const vehicleDocAlerts = useMemo(() => {
+    const allAlerts = getVehicleExpiryAlerts(vehicles);
+    return allAlerts.filter(a => ['insuranceExpiry', 'registrationExpiry', 'warrantyExpiry'].includes(a.field));
+  }, [vehicles]);
 
   const stats = useMemo(() => {
     const totalCars = vehicles.length;
@@ -72,8 +82,17 @@ export function GarageDashboard() {
     return { totalCars, availableCars, pendingAssignments, pendingReturns, lowStockParts };
   }, [vehicles, inventory]);
 
-  const handleAssignCar = (requestId: string, carPlate: string) => {
-    showToast(t('dashboards.garage.vehicleAssigned', { plate: carPlate, id: requestId }), 'success');
+  const handleOpenAssignModal = (request: typeof mockPendingAssignments[0]) => {
+    setSelectedRequest(request);
+    setIsAssignModalOpen(true);
+  };
+
+  const handleAssignFleetVehicle = (requestId: string, vehicleId: string, vehiclePlate: string) => {
+    showToast(t('dashboards.garage.vehicleAssigned', { plate: vehiclePlate, id: requestId }), 'success');
+  };
+
+  const handleAssignRentalCar = (requestId: string, rentalCompanyId: string, rentalCompanyName: string) => {
+    showToast(t('dashboards.garage.rentalCarAssigned', { company: rentalCompanyName, id: requestId }), 'success');
   };
 
   const handleConfirmReturn = (requestId: string) => {
@@ -121,6 +140,9 @@ export function GarageDashboard() {
           trendType={stats.lowStockParts > 0 ? 'danger' : 'success'}
         />
       </div>
+
+      {/* Expiry Alerts */}
+      <ExpiryAlertsSection alerts={vehicleDocAlerts} maxVisible={6} />
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -178,7 +200,7 @@ export function GarageDashboard() {
               >
                 {tab.label}
                 {tab.count !== undefined && tab.count > 0 && (
-                  <span className="bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                  <span className="bg-slate-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
                     {tab.count}
                   </span>
                 )}
@@ -215,14 +237,14 @@ export function GarageDashboard() {
                         <tr key={req.id} className="hover:bg-slate-50/50 transition-colors">
                           <td className="px-6 py-4 text-sm font-bold text-emerald-600">{req.id}</td>
                           <td className="px-6 py-4">
-                            <Badge type="info">{req.carType}</Badge>
+                            <span className="text-xs font-medium text-slate-600">{req.carType}</span>
                           </td>
                           <td className="px-6 py-4 text-sm text-slate-600">{req.departureLocation}</td>
                           <td className="px-6 py-4 text-sm text-slate-600">{req.destination}</td>
                           <td className="px-6 py-4 text-sm text-slate-600">{req.departureDateTime}</td>
                           <td className="px-6 py-4">
                             <button
-                              onClick={() => handleAssignCar(req.id, availableCarsForAssignment[0]?.plate || '')}
+                              onClick={() => handleOpenAssignModal(req)}
                               className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-all flex items-center gap-1.5"
                             >
                               <Car size={14} /> {t('dashboards.garage.assignVehicle')}
@@ -241,7 +263,7 @@ export function GarageDashboard() {
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-emerald-600">{req.id}</span>
-                          <Badge type="info">{req.carType}</Badge>
+                          <span className="text-xs font-medium text-slate-600">{req.carType}</span>
                         </div>
                       </div>
                       <div className="space-y-2 text-xs mb-3">
@@ -259,7 +281,7 @@ export function GarageDashboard() {
                         </div>
                       </div>
                       <button
-                        onClick={() => handleAssignCar(req.id, availableCarsForAssignment[0]?.plate || '')}
+                        onClick={() => handleOpenAssignModal(req)}
                         className="w-full px-3 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 transition-all flex items-center justify-center gap-2"
                       >
                         <Car size={16} /> {t('dashboards.garage.assignVehicle')}
@@ -308,9 +330,10 @@ export function GarageDashboard() {
                           <td className="px-6 py-4 text-sm text-slate-600">{ret.destination}</td>
                           <td className="px-6 py-4 text-sm text-slate-600">{ret.returnDateTime}</td>
                           <td className="px-6 py-4">
-                            <Badge type={ret.isLate ? 'danger' : 'success'}>
+                            <span className={`flex items-center gap-1.5 text-xs font-medium ${ret.isLate ? 'text-rose-600' : 'text-emerald-600'}`}>
+                              <span className={`w-1.5 h-1.5 rounded-full ${ret.isLate ? 'bg-rose-500' : 'bg-emerald-500'}`}></span>
                               {ret.isLate ? t('dashboards.garage.late') : t('dashboards.garage.onTime')}
-                            </Badge>
+                            </span>
                           </td>
                           <td className="px-6 py-4">
                             <button
@@ -333,9 +356,10 @@ export function GarageDashboard() {
                       <div className="flex items-center justify-between mb-3">
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-emerald-600">{ret.id}</span>
-                          <Badge type={ret.isLate ? 'danger' : 'success'}>
+                          <span className={`flex items-center gap-1.5 text-xs font-medium ${ret.isLate ? 'text-rose-600' : 'text-emerald-600'}`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${ret.isLate ? 'bg-rose-500' : 'bg-emerald-500'}`}></span>
                             {ret.isLate ? t('dashboards.garage.late') : t('dashboards.garage.onTime')}
-                          </Badge>
+                          </span>
                         </div>
                       </div>
                       <div className="space-y-2 text-xs mb-3">
@@ -481,6 +505,19 @@ export function GarageDashboard() {
           </>
         )}
       </GlassCard>
+
+      {/* Assign Vehicle Modal */}
+      <AssignVehicleModal
+        isOpen={isAssignModalOpen}
+        onClose={() => {
+          setIsAssignModalOpen(false);
+          setSelectedRequest(null);
+        }}
+        request={selectedRequest}
+        availableVehicles={availableCarsForAssignment}
+        onAssignFleetVehicle={handleAssignFleetVehicle}
+        onAssignRentalCar={handleAssignRentalCar}
+      />
     </div>
   );
 }

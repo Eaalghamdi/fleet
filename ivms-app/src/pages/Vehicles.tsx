@@ -1,7 +1,7 @@
 import { useState, useMemo } from 'react';
 import { Search, Plus, Car, Pencil, FileDown, Filter, Trash2 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { Badge, ConfirmDialog, Modal, Pagination } from '../components/ui';
+import { ConfirmDialog, Modal, Pagination } from '../components/ui';
 import { VehicleModal } from '../components/modals/VehicleModal';
 import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -239,9 +239,14 @@ export function Vehicles() {
                     <td className="px-6 py-4 text-sm text-slate-600">{v.year}</td>
                     <td className="px-6 py-4 text-sm text-slate-600">{v.mileage.toLocaleString()} {t('common.kilometers')}</td>
                     <td className="px-6 py-4">
-                      <Badge type={v.status === 'active' ? 'success' : v.status === 'maintenance' ? 'warning' : 'danger'}>
+                      <span className={`flex items-center gap-1.5 text-xs font-medium ${
+                        v.status === 'active' ? 'text-emerald-600' : v.status === 'maintenance' ? 'text-amber-600' : 'text-rose-500'
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${
+                          v.status === 'active' ? 'bg-emerald-500' : v.status === 'maintenance' ? 'bg-amber-500' : 'bg-rose-500'
+                        }`}></span>
                         {getTranslatedStatus(v.status)}
-                      </Badge>
+                      </span>
                     </td>
                   </tr>
                 ))}
@@ -269,9 +274,14 @@ export function Vehicles() {
                       <p className="text-xs text-slate-500">{v.plate}</p>
                     </div>
                   </div>
-                  <Badge type={v.status === 'active' ? 'success' : v.status === 'maintenance' ? 'warning' : 'danger'}>
+                  <span className={`flex items-center gap-1.5 text-xs font-medium ${
+                    v.status === 'active' ? 'text-emerald-600' : v.status === 'maintenance' ? 'text-amber-600' : 'text-rose-500'
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${
+                      v.status === 'active' ? 'bg-emerald-500' : v.status === 'maintenance' ? 'bg-amber-500' : 'bg-rose-500'
+                    }`}></span>
                     {getTranslatedStatus(v.status)}
-                  </Badge>
+                  </span>
                 </div>
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
@@ -337,9 +347,14 @@ export function Vehicles() {
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-slate-400 mb-1">{t('dashboards.garage.status')}</p>
-                <Badge type={viewingVehicle.status === 'active' ? 'success' : viewingVehicle.status === 'maintenance' ? 'warning' : 'danger'}>
+                <span className={`flex items-center gap-1.5 text-sm font-medium ${
+                  viewingVehicle.status === 'active' ? 'text-emerald-600' : viewingVehicle.status === 'maintenance' ? 'text-amber-600' : 'text-rose-500'
+                }`}>
+                  <span className={`w-2 h-2 rounded-full ${
+                    viewingVehicle.status === 'active' ? 'bg-emerald-500' : viewingVehicle.status === 'maintenance' ? 'bg-amber-500' : 'bg-rose-500'
+                  }`}></span>
                   {getTranslatedStatus(viewingVehicle.status)}
-                </Badge>
+                </span>
               </div>
               <div>
                 <p className="text-xs text-slate-400 mb-1">{t('dashboards.garage.year')}</p>

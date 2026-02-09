@@ -55,6 +55,7 @@ export function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen, isMobileOp
         return [
           { id: 'dashboard', label: t('nav.operationDashboard'), icon: LayoutDashboard },
           { id: 'vehicles', label: t('nav.availableVehicles'), icon: Car },
+          { id: 'drivers', label: t('nav.driverManagement'), icon: Users },
         ];
       case 'GARAGE':
         return [

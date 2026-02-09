@@ -10,37 +10,33 @@ import {
   Search,
   Filter,
   X,
-  Users,
-  UserPlus,
-  Edit2,
-  Trash2,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { StatCard, Badge, GlassCard, Pagination } from '../../components/ui';
+import { StatCard, GlassCard, Pagination } from '../../components/ui';
 
 const ITEMS_PER_PAGE = 10;
 import { useApp } from '../../contexts/AppContext';
 import { carRequests as initialCarRequests } from '../../data';
-import type { CarRequest, CarRequestStatus, Driver } from '../../types';
+import type { CarRequest, CarRequestStatus } from '../../types';
 import { CarRequestForm } from '../../components/forms/CarRequestForm';
 import { CarRequestModal } from '../../components/modals/CarRequestModal';
-import { DriverForm } from '../../components/forms/DriverForm';
+import { getDriverExpiryAlerts } from '../../utils/expiryUtils';
+import { ExpiryAlertsSection } from '../../components/dashboard/ExpiryAlertsSection';
 
 export function OperationDashboard() {
   const { t } = useTranslation();
-  const { showToast, drivers, addDriver, updateDriver, deleteDriver } = useApp();
+  const { drivers, showToast } = useApp();
+
+  const driverAlerts = useMemo(() => getDriverExpiryAlerts(drivers), [drivers]);
 
   // State management
   const [carRequests, setCarRequests] = useState<CarRequest[]>(initialCarRequests);
   const [searchTerm, setSearchTerm] = useState('');
-  const [driverSearchTerm, setDriverSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
   const [activeTab, setActiveTab] = useState<'all' | 'pending' | 'recent'>('all');
-  const [activeView, setActiveView] = useState<'requests' | 'drivers'>('requests');
   const [requestsPage, setRequestsPage] = useState(1);
-  const [driversPage, setDriversPage] = useState(1);
 
   // Modal states
   const [showFormModal, setShowFormModal] = useState(false);
@@ -48,12 +44,6 @@ export function OperationDashboard() {
   const [showCancelConfirm, setShowCancelConfirm] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<CarRequest | null>(null);
   const [editingRequest, setEditingRequest] = useState<CarRequest | null>(null);
-
-  // Driver modal states
-  const [showDriverFormModal, setShowDriverFormModal] = useState(false);
-  const [editingDriver, setEditingDriver] = useState<Driver | null>(null);
-  const [showDeleteDriverConfirm, setShowDeleteDriverConfirm] = useState(false);
-  const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
 
   // Calculate statistics
   const stats = useMemo(() => {
@@ -175,25 +165,6 @@ export function OperationDashboard() {
     setDateTo('');
   };
 
-  // Filter drivers
-  const filteredDrivers = useMemo(() => {
-    return drivers.filter(driver => {
-      const matchesSearch =
-        driver.name.toLowerCase().includes(driverSearchTerm.toLowerCase()) ||
-        driver.nationalId.toLowerCase().includes(driverSearchTerm.toLowerCase()) ||
-        driver.nationality.toLowerCase().includes(driverSearchTerm.toLowerCase()) ||
-        driver.occupation.toLowerCase().includes(driverSearchTerm.toLowerCase());
-      return matchesSearch;
-    });
-  }, [drivers, driverSearchTerm]);
-
-  // Pagination for drivers
-  const driversTotalPages = Math.max(1, Math.ceil(filteredDrivers.length / ITEMS_PER_PAGE));
-  const paginatedDrivers = useMemo(() => {
-    const start = (driversPage - 1) * ITEMS_PER_PAGE;
-    return filteredDrivers.slice(start, start + ITEMS_PER_PAGE);
-  }, [filteredDrivers, driversPage]);
-
   // Pagination for requests
   const requestsTotalPages = Math.max(1, Math.ceil(filteredRequests.length / ITEMS_PER_PAGE));
   const paginatedRequests = useMemo(() => {
@@ -206,54 +177,29 @@ export function OperationDashboard() {
     setRequestsPage(1);
   }, [searchTerm, filterStatus, dateFrom, dateTo]);
 
-  useEffect(() => {
-    setDriversPage(1);
-  }, [driverSearchTerm]);
-
-  // Driver handlers
-  const handleAddDriver = () => {
-    setEditingDriver(null);
-    setShowDriverFormModal(true);
-  };
-
-  const handleEditDriver = (driver: Driver) => {
-    setEditingDriver(driver);
-    setShowDriverFormModal(true);
-  };
-
-  const handleDeleteDriver = (driver: Driver) => {
-    setSelectedDriver(driver);
-    setShowDeleteDriverConfirm(true);
-  };
-
-  const confirmDeleteDriver = () => {
-    if (selectedDriver) {
-      deleteDriver(selectedDriver.id);
-      setShowDeleteDriverConfirm(false);
-      setSelectedDriver(null);
-    }
-  };
-
-  const handleDriverFormSubmit = (data: Omit<Driver, 'id' | 'status' | 'createdAt' | 'updatedAt'>) => {
-    if (editingDriver) {
-      updateDriver(editingDriver.id, data);
-    } else {
-      addDriver({ ...data, status: 'active' });
-    }
-    setShowDriverFormModal(false);
-    setEditingDriver(null);
-  };
-
-  const getStatusBadge = (status: CarRequestStatus) => {
+  const getStatusStyle = (status: CarRequestStatus) => {
     switch (status) {
-      case 'pending': return <Badge type="warning">{t('carRequestStatuses.pending')}</Badge>;
-      case 'assigned': return <Badge type="info">{t('carRequestStatuses.assigned')}</Badge>;
-      case 'approved': return <Badge type="success">{t('carRequestStatuses.approved')}</Badge>;
-      case 'rejected': return <Badge type="danger">{t('carRequestStatuses.rejected')}</Badge>;
-      case 'in_transit': return <Badge type="success">{t('carRequestStatuses.inTransit')}</Badge>;
-      case 'returned': return <Badge type="success">{t('carRequestStatuses.returned')}</Badge>;
-      case 'cancelled': return <Badge type="danger">{t('carRequestStatuses.cancelled')}</Badge>;
-      default: return <Badge type="info">{status}</Badge>;
+      case 'pending': return 'text-amber-600';
+      case 'assigned': return 'text-slate-600';
+      case 'approved': return 'text-emerald-600';
+      case 'rejected': return 'text-rose-600';
+      case 'in_transit': return 'text-emerald-600';
+      case 'returned': return 'text-emerald-600';
+      case 'cancelled': return 'text-rose-600';
+      default: return 'text-slate-600';
+    }
+  };
+
+  const getStatusText = (status: CarRequestStatus) => {
+    switch (status) {
+      case 'pending': return t('carRequestStatuses.pending');
+      case 'assigned': return t('carRequestStatuses.assigned');
+      case 'approved': return t('carRequestStatuses.approved');
+      case 'rejected': return t('carRequestStatuses.rejected');
+      case 'in_transit': return t('carRequestStatuses.inTransit');
+      case 'returned': return t('carRequestStatuses.returned');
+      case 'cancelled': return t('carRequestStatuses.cancelled');
+      default: return status;
     }
   };
 
@@ -315,35 +261,11 @@ export function OperationDashboard() {
         />
       </div>
 
-      {/* View Toggle */}
-      <div className="flex gap-2 p-1 bg-slate-100 rounded-xl w-fit">
-        <button
-          onClick={() => setActiveView('requests')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
-            activeView === 'requests'
-              ? 'bg-white text-emerald-600 shadow-sm'
-              : 'text-slate-600 hover:text-slate-800'
-          }`}
-        >
-          <Car size={18} />
-          {t('dashboards.operation.carRequests')}
-        </button>
-        <button
-          onClick={() => setActiveView('drivers')}
-          className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${
-            activeView === 'drivers'
-              ? 'bg-white text-emerald-600 shadow-sm'
-              : 'text-slate-600 hover:text-slate-800'
-          }`}
-        >
-          <Users size={18} />
-          {t('pages.drivers.drivers')}
-        </button>
-      </div>
+      {/* Expiry Alerts */}
+      <ExpiryAlertsSection alerts={driverAlerts} maxVisible={6} />
 
       {/* Quick Actions */}
-      {activeView === 'requests' && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <button
             onClick={handleNewRequest}
             className="p-4 bg-blue-50 hover:bg-blue-100 rounded-xl border border-blue-100 transition-colors flex items-center gap-3"
@@ -369,7 +291,7 @@ export function OperationDashboard() {
               <p className="text-xs text-slate-500">{t('dashboards.operation.confirmTripStart')}</p>
             </div>
             {pendingActions.length > 0 && (
-              <span className="bg-amber-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+              <span className="bg-slate-400 text-white text-xs font-bold px-2 py-1 rounded-full">
                 {pendingActions.length}
               </span>
             )}
@@ -388,189 +310,9 @@ export function OperationDashboard() {
             </div>
           </button>
         </div>
-      )}
-
-      {/* Drivers Section */}
-      {activeView === 'drivers' && (
-        <>
-          {/* Driver Stats */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <StatCard
-              title={t('pages.drivers.totalDrivers')}
-              value={drivers.length.toString()}
-              icon={Users}
-              trend={t('pages.drivers.registered')}
-              trendType="info"
-            />
-            <StatCard
-              title={t('pages.drivers.activeDrivers')}
-              value={drivers.filter(d => d.status === 'active').length.toString()}
-              icon={CheckCircle2}
-              trend={t('pages.drivers.currentlyActive')}
-              trendType="success"
-            />
-            <button
-              onClick={handleAddDriver}
-              className="p-4 bg-emerald-50 hover:bg-emerald-100 rounded-xl border border-emerald-100 transition-colors flex items-center gap-3"
-            >
-              <div className="p-3 bg-emerald-100 rounded-xl text-emerald-600">
-                <UserPlus size={24} />
-              </div>
-              <div className="text-start rtl:text-right ltr:text-left">
-                <p className="font-bold text-slate-800">{t('pages.drivers.registerDriver')}</p>
-                <p className="text-xs text-slate-500">{t('pages.drivers.addNewDriver')}</p>
-              </div>
-            </button>
-          </div>
-
-          {/* Drivers Table */}
-          <GlassCard>
-            <div className="p-4 sm:p-6 border-b border-slate-100 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-              <div>
-                <h2 className="text-lg font-bold text-slate-800">{t('pages.drivers.driversList')}</h2>
-                <p className="text-sm text-slate-500">{t('pages.drivers.manageDrivers')}</p>
-              </div>
-              <div className="relative w-full sm:w-auto">
-                <Search className="absolute rtl:right-3 ltr:left-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-                <input
-                  type="text"
-                  placeholder={t('pages.drivers.searchPlaceholder')}
-                  value={driverSearchTerm}
-                  onChange={(e) => setDriverSearchTerm(e.target.value)}
-                  className="w-full sm:w-64 bg-white border border-slate-200 rounded-xl py-2 rtl:pr-10 rtl:pl-4 ltr:pl-10 ltr:pr-4 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all"
-                />
-              </div>
-            </div>
-
-            {/* Desktop Table */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full rtl:text-right ltr:text-left">
-                <thead>
-                  <tr className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 bg-slate-50/30">
-                    <th className="px-6 py-4">{t('pages.drivers.driverId')}</th>
-                    <th className="px-6 py-4">{t('pages.drivers.driverName')}</th>
-                    <th className="px-6 py-4">{t('pages.drivers.nationalId')}</th>
-                    <th className="px-6 py-4">{t('pages.drivers.nationality')}</th>
-                    <th className="px-6 py-4">{t('pages.drivers.occupation')}</th>
-                    <th className="px-6 py-4">{t('common.status')}</th>
-                    <th className="px-6 py-4">{t('common.actions')}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-50">
-                  {paginatedDrivers.map((driver) => (
-                    <tr key={driver.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4 font-bold text-emerald-600 text-sm">{driver.id}</td>
-                      <td className="px-6 py-4 text-sm text-slate-800 font-medium">{driver.name}</td>
-                      <td className="px-6 py-4 text-sm text-slate-600">{driver.nationalId}</td>
-                      <td className="px-6 py-4 text-sm text-slate-600">
-                        {t(`pages.drivers.nationalities.${driver.nationality}`)}
-                      </td>
-                      <td className="px-6 py-4 text-sm text-slate-600">{driver.occupation}</td>
-                      <td className="px-6 py-4">
-                        <Badge type={driver.status === 'active' ? 'success' : 'danger'}>
-                          {driver.status === 'active' ? t('common.active') : t('common.inactive')}
-                        </Badge>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleEditDriver(driver)}
-                            className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 hover:text-blue-600"
-                            title={t('common.edit')}
-                          >
-                            <Edit2 size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleDeleteDriver(driver)}
-                            className="p-1.5 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 hover:text-rose-600"
-                            title={t('common.delete')}
-                          >
-                            <Trash2 size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Mobile Cards */}
-            <div className="md:hidden divide-y divide-slate-100">
-              {paginatedDrivers.map((driver) => (
-                <div key={driver.id} className="p-4">
-                  <div className="flex items-start justify-between mb-3">
-                    <div>
-                      <span className="text-emerald-600 font-bold text-sm">{driver.id}</span>
-                      <p className="text-sm font-bold text-slate-800 mt-1">{driver.name}</p>
-                    </div>
-                    <Badge type={driver.status === 'active' ? 'success' : 'danger'}>
-                      {driver.status === 'active' ? t('common.active') : t('common.inactive')}
-                    </Badge>
-                  </div>
-                  <div className="space-y-1 mb-3">
-                    <p className="text-xs text-slate-500">
-                      <span className="font-medium">{t('pages.drivers.nationalId')}:</span> {driver.nationalId}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      <span className="font-medium">{t('pages.drivers.nationality')}:</span> {t(`pages.drivers.nationalities.${driver.nationality}`)}
-                    </p>
-                    <p className="text-xs text-slate-500">
-                      <span className="font-medium">{t('pages.drivers.occupation')}:</span> {driver.occupation}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleEditDriver(driver)}
-                      className="flex-1 px-3 py-2 bg-blue-50 text-blue-600 rounded-lg text-xs font-medium hover:bg-blue-100 transition-colors"
-                    >
-                      {t('common.edit')}
-                    </button>
-                    <button
-                      onClick={() => handleDeleteDriver(driver)}
-                      className="flex-1 px-3 py-2 bg-rose-50 text-rose-600 rounded-lg text-xs font-medium hover:bg-rose-100 transition-colors"
-                    >
-                      {t('common.delete')}
-                    </button>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {filteredDrivers.length === 0 && (
-              <div className="p-12 text-center">
-                <Users size={48} className="mx-auto text-slate-300 mb-4" />
-                <h3 className="text-lg font-medium text-slate-600 mb-2">{t('pages.drivers.noDrivers')}</h3>
-                <p className="text-sm text-slate-400">
-                  {driverSearchTerm
-                    ? t('pages.drivers.noSearchResults')
-                    : t('pages.drivers.startByRegistering')}
-                </p>
-                {!driverSearchTerm && (
-                  <button
-                    onClick={handleAddDriver}
-                    className="mt-4 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium hover:bg-emerald-700 transition-colors"
-                  >
-                    {t('pages.drivers.registerDriver')}
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Drivers Pagination */}
-            <Pagination
-              currentPage={driversPage}
-              totalPages={driversTotalPages}
-              onPageChange={setDriversPage}
-              totalItems={filteredDrivers.length}
-              itemsPerPage={ITEMS_PER_PAGE}
-            />
-          </GlassCard>
-        </>
-      )}
 
       {/* Car Requests Table */}
-      {activeView === 'requests' && <GlassCard>
+      <GlassCard>
         {/* Tab Navigation */}
         <div className="border-b border-slate-100">
           <div className="flex">
@@ -594,7 +336,7 @@ export function OperationDashboard() {
             >
               {t('dashboards.operation.pendingActions')}
               {pendingActions.length > 0 && (
-                <span className="bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                <span className="bg-slate-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
                   {pendingActions.length}
                 </span>
               )}
@@ -716,7 +458,7 @@ export function OperationDashboard() {
                   <td className="px-6 py-4 text-sm text-slate-600">
                     {req.assignedCarPlate || <span className="text-slate-400">{t('dashboards.operation.notAssigned')}</span>}
                   </td>
-                  <td className="px-6 py-4">{getStatusBadge(req.status)}</td>
+                  <td className="px-6 py-4"><span className={`text-xs font-medium ${getStatusStyle(req.status)}`}>{getStatusText(req.status)}</span></td>
                 </tr>
               ))}
             </tbody>
@@ -738,7 +480,7 @@ export function OperationDashboard() {
                     {req.description || t('dashboards.operation.noDescription')}
                   </p>
                 </div>
-                {getStatusBadge(req.status)}
+                <span className={`text-xs font-medium ${getStatusStyle(req.status)}`}>{getStatusText(req.status)}</span>
               </div>
               <div className="flex flex-wrap items-center gap-2 mb-2">
                 <div className="flex items-center gap-1 text-xs text-slate-500">
@@ -781,7 +523,7 @@ export function OperationDashboard() {
             itemsPerPage={ITEMS_PER_PAGE}
           />
         )}
-      </GlassCard>}
+      </GlassCard>
 
       {/* Form Modal */}
       {showFormModal && (
@@ -856,64 +598,6 @@ export function OperationDashboard() {
         </div>
       )}
 
-      {/* Driver Form Modal */}
-      {showDriverFormModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-xl">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-              <h2 className="text-xl font-bold text-slate-800">
-                {editingDriver ? t('pages.drivers.editDriver') : t('pages.drivers.registerNewDriver')}
-              </h2>
-              <button
-                onClick={() => {
-                  setShowDriverFormModal(false);
-                  setEditingDriver(null);
-                }}
-                className="p-2 hover:bg-slate-200 rounded-full transition-colors"
-              >
-                <X size={20} className="text-slate-500" />
-              </button>
-            </div>
-            <DriverForm
-              driver={editingDriver || undefined}
-              onSubmit={handleDriverFormSubmit}
-              onCancel={() => {
-                setShowDriverFormModal(false);
-                setEditingDriver(null);
-              }}
-            />
-          </div>
-        </div>
-      )}
-
-      {/* Delete Driver Confirmation Modal */}
-      {showDeleteDriverConfirm && selectedDriver && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-60 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl w-full max-w-md shadow-xl p-6">
-            <h3 className="text-lg font-bold text-slate-800 mb-2">{t('pages.drivers.deleteDriver')}</h3>
-            <p className="text-sm text-slate-600 mb-6">
-              {t('pages.drivers.deleteConfirmation', { name: selectedDriver.name })}
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowDeleteDriverConfirm(false);
-                  setSelectedDriver(null);
-                }}
-                className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                onClick={confirmDeleteDriver}
-                className="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-medium transition-colors"
-              >
-                {t('common.delete')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

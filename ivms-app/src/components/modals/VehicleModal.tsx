@@ -23,7 +23,7 @@ export function VehicleModal({ isOpen, onClose, vehicle, onSubmit }: VehicleModa
       isOpen={isOpen}
       onClose={onClose}
       title={vehicle ? t('modals.vehicle.editTitle') : t('modals.vehicle.addTitle')}
-      size="lg"
+      size="xl"
     >
       <VehicleForm vehicle={vehicle} onSubmit={handleSubmit} onCancel={onClose} />
     </Modal>

@@ -2,7 +2,9 @@ import type { LucideIcon } from 'lucide-react';
 
 export interface Vehicle {
   id: string;
+  carId: string;
   plate: string;
+  vin: string;
   brand: string;
   model: string;
   year: number;
@@ -11,6 +13,13 @@ export interface Vehicle {
   fuel: number;
   mileage: number;
   location: string;
+  insuranceIssueDate: string;
+  insuranceExpiryDate: string;
+  warrantyExpiryDate: string;
+  registrationExpiryDate?: string;
+  nextMaintenanceDate?: string;
+  images: string[];
+  maintenanceHistory: string;
 }
 
 export interface MaintenanceRequest {
@@ -44,7 +53,7 @@ export interface NavItem {
 
 export type BadgeType = 'success' | 'danger' | 'warning' | 'info';
 
-export type ViewType = 'dashboard' | 'vehicles' | 'maintenance' | 'inventory' | 'reports' | 'settings' | 'users';
+export type ViewType = 'dashboard' | 'vehicles' | 'maintenance' | 'inventory' | 'reports' | 'settings' | 'users' | 'drivers';
 
 export interface Notification {
   id: string;
@@ -103,12 +112,32 @@ export interface Toast {
   type: 'success' | 'error' | 'warning' | 'info';
 }
 
+export interface DriverLicense {
+  number: string;
+  type: 'private' | 'public' | 'heavy' | 'motorcycle';
+  issueDate: string;
+  expiryDate: string;
+}
+
+export interface DriverPermit {
+  id: string;
+  type: string;
+  issueDate: string;
+  expiryDate: string;
+  status: 'active' | 'expired' | 'revoked';
+  notes?: string;
+}
+
 export interface Driver {
   id: string;
   name: string;
   nationalId: string;
   nationality: string;
   occupation: string;
+  phone: string;
+  license: DriverLicense;
+  assignedCarId: string | null;
+  permits: DriverPermit[];
   status: 'active' | 'inactive';
   createdAt: string;
   updatedAt: string;

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { MaintenanceRequest } from '../../types';
 import { useApp } from '../../contexts/AppContext';
 
@@ -8,19 +9,20 @@ interface MaintenanceFormProps {
   onCancel: () => void;
 }
 
-const typeOptions: MaintenanceRequest['type'][] = ['تصحيحية', 'وقائية'];
-const statusOptions: MaintenanceRequest['status'][] = ['مجدول', 'بانتظار الموافقة', 'قيد التنفيذ', 'مكتمل'];
-const priorityOptions: MaintenanceRequest['priority'][] = ['عالية', 'متوسطة', 'منخفضة'];
+const typeOptions: MaintenanceRequest['type'][] = ['corrective', 'preventive'];
+const statusOptions: MaintenanceRequest['status'][] = ['scheduled', 'pending_approval', 'in_progress', 'completed'];
+const priorityOptions: MaintenanceRequest['priority'][] = ['high', 'medium', 'low'];
 
 export function MaintenanceForm({ maintenance, onSubmit, onCancel }: MaintenanceFormProps) {
+  const { t } = useTranslation();
   const { vehicles } = useApp();
 
   const [formData, setFormData] = useState({
     vehicle: '',
-    type: 'وقائية' as MaintenanceRequest['type'],
+    type: 'preventive' as MaintenanceRequest['type'],
     description: '',
-    status: 'مجدول' as MaintenanceRequest['status'],
-    priority: 'متوسطة' as MaintenanceRequest['priority'],
+    status: 'scheduled' as MaintenanceRequest['status'],
+    priority: 'medium' as MaintenanceRequest['priority'],
     createdAt: new Date().toISOString().split('T')[0],
   });
 
@@ -48,7 +50,7 @@ export function MaintenanceForm({ maintenance, onSubmit, onCancel }: Maintenance
         {/* Vehicle */}
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-slate-700 mb-1">
-            المركبة <span className="text-rose-500">*</span>
+            {t('pages.maintenance.vehicle')} <span className="text-rose-500">*</span>
           </label>
           <select
             required
@@ -56,7 +58,7 @@ export function MaintenanceForm({ maintenance, onSubmit, onCancel }: Maintenance
             onChange={(e) => setFormData({ ...formData, vehicle: e.target.value })}
             className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
           >
-            <option value="">اختر المركبة</option>
+            <option value="">{t('pages.maintenance.selectVehicle')}</option>
             {vehicles.map((v) => (
               <option key={v.id} value={v.id}>
                 {v.plate} - {v.brand} {v.model}
@@ -68,7 +70,7 @@ export function MaintenanceForm({ maintenance, onSubmit, onCancel }: Maintenance
         {/* Type */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
-            نوع الصيانة
+            {t('pages.maintenance.maintenanceType')}
           </label>
           <select
             value={formData.type}
@@ -77,7 +79,7 @@ export function MaintenanceForm({ maintenance, onSubmit, onCancel }: Maintenance
           >
             {typeOptions.map((type) => (
               <option key={type} value={type}>
-                {type}
+                {t(`maintenanceTypes.${type}`)}
               </option>
             ))}
           </select>
@@ -86,7 +88,7 @@ export function MaintenanceForm({ maintenance, onSubmit, onCancel }: Maintenance
         {/* Priority */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
-            الأولوية
+            {t('pages.maintenance.priority')}
           </label>
           <select
             value={formData.priority}
@@ -95,7 +97,7 @@ export function MaintenanceForm({ maintenance, onSubmit, onCancel }: Maintenance
           >
             {priorityOptions.map((priority) => (
               <option key={priority} value={priority}>
-                {priority}
+                {t(`priorities.${priority}`)}
               </option>
             ))}
           </select>
@@ -104,7 +106,7 @@ export function MaintenanceForm({ maintenance, onSubmit, onCancel }: Maintenance
         {/* Status */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
-            الحالة
+            {t('pages.maintenance.status')}
           </label>
           <select
             value={formData.status}
@@ -113,7 +115,7 @@ export function MaintenanceForm({ maintenance, onSubmit, onCancel }: Maintenance
           >
             {statusOptions.map((status) => (
               <option key={status} value={status}>
-                {status}
+                {t(`statuses.${status === 'in_progress' ? 'inProgress' : status === 'pending_approval' ? 'pendingApproval' : status}`)}
               </option>
             ))}
           </select>
@@ -122,7 +124,7 @@ export function MaintenanceForm({ maintenance, onSubmit, onCancel }: Maintenance
         {/* Date */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
-            التاريخ
+            {t('pages.maintenance.date')}
           </label>
           <input
             type="date"
@@ -135,7 +137,7 @@ export function MaintenanceForm({ maintenance, onSubmit, onCancel }: Maintenance
         {/* Description */}
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-slate-700 mb-1">
-            الوصف <span className="text-rose-500">*</span>
+            {t('pages.maintenance.description')} <span className="text-rose-500">*</span>
           </label>
           <textarea
             required
@@ -143,7 +145,7 @@ export function MaintenanceForm({ maintenance, onSubmit, onCancel }: Maintenance
             value={formData.description}
             onChange={(e) => setFormData({ ...formData, description: e.target.value })}
             className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 resize-none"
-            placeholder="وصف العمل المطلوب..."
+            placeholder={t('pages.maintenance.descriptionPlaceholder')}
           />
         </div>
       </div>
@@ -155,13 +157,13 @@ export function MaintenanceForm({ maintenance, onSubmit, onCancel }: Maintenance
           onClick={onCancel}
           className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
         >
-          إلغاء
+          {t('common.cancel')}
         </button>
         <button
           type="submit"
           className="flex-1 px-4 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-emerald-500/30"
         >
-          {maintenance ? 'حفظ التغييرات' : 'إنشاء طلب الصيانة'}
+          {maintenance ? t('common.save') : t('pages.maintenance.createRequest')}
         </button>
       </div>
     </form>

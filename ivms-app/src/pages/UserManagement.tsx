@@ -14,7 +14,7 @@ import {
   EyeOff,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { GlassCard, Modal, Badge, ConfirmDialog, Pagination } from '../components/ui';
+import { GlassCard, Modal, ConfirmDialog, Pagination } from '../components/ui';
 import { useApp } from '../contexts/AppContext';
 
 type Department = 'ADMIN' | 'OPERATION' | 'GARAGE' | 'MAINTENANCE';
@@ -138,14 +138,14 @@ export function UserManagement() {
     return labels[department];
   };
 
-  const getDepartmentBadgeType = (department: Department): 'success' | 'info' | 'warning' | 'danger' => {
-    const types: Record<Department, 'success' | 'info' | 'warning' | 'danger'> = {
-      ADMIN: 'danger',
-      OPERATION: 'info',
-      GARAGE: 'success',
-      MAINTENANCE: 'warning',
+  const getDepartmentColor = (department: Department): string => {
+    const colors: Record<Department, string> = {
+      ADMIN: 'text-rose-600',
+      OPERATION: 'text-slate-600',
+      GARAGE: 'text-emerald-600',
+      MAINTENANCE: 'text-amber-600',
     };
-    return types[department];
+    return colors[department];
   };
 
   const handleOpenAddModal = () => {
@@ -353,49 +353,50 @@ export function UserManagement() {
         </GlassCard>
       </div>
 
-      {/* Filters */}
-      <GlassCard className="p-4">
-        <div className="flex flex-col lg:flex-row gap-4">
-          {/* Search */}
-          <div className="flex-1 relative">
-            <Search size={18} className="absolute start-3 top-1/2 -translate-y-1/2 text-slate-400" />
-            <input
-              type="text"
-              placeholder={t('pages.userManagement.searchPlaceholder')}
-              value={searchQuery}
-              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
-              className="w-full ps-10 pe-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-            />
-          </div>
-
-          {/* Department Filter */}
-          <select
-            value={departmentFilter}
-            onChange={(e) => { setDepartmentFilter(e.target.value); setCurrentPage(1); }}
-            className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          >
-            <option value="all">{t('pages.userManagement.allDepartments')}</option>
-            <option value="ADMIN">{t('departments.admin')}</option>
-            <option value="OPERATION">{t('departments.operation')}</option>
-            <option value="GARAGE">{t('departments.garage')}</option>
-            <option value="MAINTENANCE">{t('departments.maintenance')}</option>
-          </select>
-
-          {/* Status Filter */}
-          <select
-            value={statusFilter}
-            onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-            className="px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          >
-            <option value="all">{t('pages.userManagement.allStatuses')}</option>
-            <option value="active">{t('common.active')}</option>
-            <option value="inactive">{t('common.inactive')}</option>
-          </select>
-        </div>
-      </GlassCard>
-
       {/* Users Table */}
-      <GlassCard>
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        {/* Search and Filters */}
+        <div className="p-4 sm:p-6 border-b border-gray-50 space-y-4">
+          <div className="flex flex-col md:flex-row justify-between gap-4">
+            <div className="relative flex-1">
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <Search size={18} />
+              </div>
+              <input
+                type="text"
+                placeholder={t('pages.userManagement.searchPlaceholder')}
+                value={searchQuery}
+                onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1); }}
+                className="w-full pr-10 pl-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+              />
+            </div>
+            <div className="flex gap-2">
+              {/* Department Filter */}
+              <select
+                value={departmentFilter}
+                onChange={(e) => { setDepartmentFilter(e.target.value); setCurrentPage(1); }}
+                className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all min-w-[140px]"
+              >
+                <option value="all">{t('pages.userManagement.allDepartments')}</option>
+                <option value="ADMIN">{t('departments.admin')}</option>
+                <option value="OPERATION">{t('departments.operation')}</option>
+                <option value="GARAGE">{t('departments.garage')}</option>
+                <option value="MAINTENANCE">{t('departments.maintenance')}</option>
+              </select>
+
+              {/* Status Filter */}
+              <select
+                value={statusFilter}
+                onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
+                className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all min-w-[140px]"
+              >
+                <option value="all">{t('pages.userManagement.allStatuses')}</option>
+                <option value="active">{t('common.active')}</option>
+                <option value="inactive">{t('common.inactive')}</option>
+              </select>
+            </div>
+          </div>
+        </div>
         {/* Bulk Actions Bar */}
         {selectedUserIds.size > 0 && (
           <div className="p-4 bg-blue-50 border-b border-blue-100 flex items-center justify-between">
@@ -425,11 +426,12 @@ export function UserManagement() {
           </div>
         )}
 
-        <div className="overflow-x-auto">
-          <table className="w-full">
+        {/* Desktop Table */}
+        <div className="hidden md:block overflow-x-auto">
+          <table className="w-full rtl:text-right ltr:text-left">
             <thead>
-              <tr className="text-xs text-slate-500 border-b border-slate-200">
-                <th className="py-3 px-4 text-start font-semibold">
+              <tr className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 bg-slate-50/30">
+                <th className="px-6 py-4">
                   <input
                     type="checkbox"
                     checked={paginatedUsers.length > 0 && selectedUserIds.size === paginatedUsers.length}
@@ -437,20 +439,20 @@ export function UserManagement() {
                     className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
                   />
                 </th>
-                <th className="py-3 px-4 text-start font-semibold">{t('pages.userManagement.fullName')}</th>
-                <th className="py-3 px-4 text-start font-semibold">{t('pages.userManagement.username')}</th>
-                <th className="py-3 px-4 text-start font-semibold">{t('pages.userManagement.department')}</th>
-                <th className="py-3 px-4 text-start font-semibold">{t('pages.userManagement.contact')}</th>
-                <th className="py-3 px-4 text-start font-semibold">{t('common.status')}</th>
-                <th className="py-3 px-4 text-start font-semibold">{t('pages.userManagement.lastLogin')}</th>
-                <th className="py-3 px-4 text-start font-semibold">{t('common.actions')}</th>
+                <th className="px-6 py-4">{t('pages.userManagement.fullName')}</th>
+                <th className="px-6 py-4">{t('pages.userManagement.username')}</th>
+                <th className="px-6 py-4">{t('pages.userManagement.department')}</th>
+                <th className="px-6 py-4">{t('pages.userManagement.contact')}</th>
+                <th className="px-6 py-4">{t('common.status')}</th>
+                <th className="px-6 py-4">{t('pages.userManagement.lastLogin')}</th>
+                <th className="px-6 py-4">{t('common.actions')}</th>
               </tr>
             </thead>
-            <tbody className="text-sm">
+            <tbody className="divide-y divide-slate-50">
               {paginatedUsers.length > 0 ? (
                 paginatedUsers.map((user) => (
-                  <tr key={user.id} className={`border-b border-slate-100 hover:bg-slate-50 transition-colors ${selectedUserIds.has(user.id) ? 'bg-blue-50' : ''}`}>
-                    <td className="py-3 px-4">
+                  <tr key={user.id} className={`hover:bg-slate-50/50 transition-colors cursor-pointer ${selectedUserIds.has(user.id) ? 'bg-blue-50/50' : ''}`}>
+                    <td className="px-6 py-4">
                       <input
                         type="checkbox"
                         checked={selectedUserIds.has(user.id)}
@@ -458,16 +460,16 @@ export function UserManagement() {
                         className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
                       />
                     </td>
-                    <td className="py-3 px-4">
-                      <span className="font-medium text-slate-800">{user.fullName}</span>
+                    <td className="px-6 py-4">
+                      <span className="text-sm font-bold text-slate-800">{user.fullName}</span>
                     </td>
-                    <td className="py-3 px-4 text-slate-600">{user.username}</td>
-                    <td className="py-3 px-4">
-                      <Badge type={getDepartmentBadgeType(user.department)}>
+                    <td className="px-6 py-4 text-sm text-slate-600">{user.username}</td>
+                    <td className="px-6 py-4">
+                      <span className={`text-xs font-medium ${getDepartmentColor(user.department)}`}>
                         {getDepartmentLabel(user.department)}
-                      </Badge>
+                      </span>
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="px-6 py-4">
                       <div className="space-y-1">
                         <div className="flex items-center gap-1.5 text-slate-600">
                           <Mail size={14} />
@@ -479,9 +481,9 @@ export function UserManagement() {
                         </div>
                       </div>
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="px-6 py-4">
                       <button
-                        onClick={() => handleToggleStatus(user)}
+                        onClick={(e) => { e.stopPropagation(); handleToggleStatus(user); }}
                         className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
                           user.isActive
                             ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
@@ -491,27 +493,27 @@ export function UserManagement() {
                         {user.isActive ? t('common.active') : t('common.inactive')}
                       </button>
                     </td>
-                    <td className="py-3 px-4 text-slate-600 text-xs">
+                    <td className="px-6 py-4 text-slate-600 text-xs">
                       {user.lastLogin || t('pages.userManagement.neverLoggedIn')}
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="px-6 py-4">
                       <div className="flex items-center gap-1">
                         <button
-                          onClick={() => handleViewDetails(user)}
+                          onClick={(e) => { e.stopPropagation(); handleViewDetails(user); }}
                           className="p-2 hover:bg-slate-100 rounded-lg transition-colors text-slate-500 hover:text-slate-700"
                           title={t('common.details')}
                         >
                           <Eye size={16} />
                         </button>
                         <button
-                          onClick={() => handleOpenEditModal(user)}
+                          onClick={(e) => { e.stopPropagation(); handleOpenEditModal(user); }}
                           className="p-2 hover:bg-blue-50 rounded-lg transition-colors text-blue-500 hover:text-blue-700"
                           title={t('common.edit')}
                         >
                           <Edit2 size={16} />
                         </button>
                         <button
-                          onClick={() => handleDeleteClick(user)}
+                          onClick={(e) => { e.stopPropagation(); handleDeleteClick(user); }}
                           className="p-2 hover:bg-rose-50 rounded-lg transition-colors text-rose-500 hover:text-rose-700"
                           title={t('common.delete')}
                         >
@@ -541,6 +543,65 @@ export function UserManagement() {
             </tbody>
           </table>
         </div>
+
+        {/* Mobile Cards */}
+        <div className="md:hidden divide-y divide-slate-100">
+          {paginatedUsers.length > 0 ? (
+            paginatedUsers.map((user) => (
+              <div
+                key={user.id}
+                onClick={() => handleViewDetails(user)}
+                className={`p-4 hover:bg-slate-50/50 transition-colors cursor-pointer ${selectedUserIds.has(user.id) ? 'bg-blue-50/50' : ''}`}
+              >
+                <div className="flex items-start justify-between mb-3">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={selectedUserIds.has(user.id)}
+                      onChange={(e) => { e.stopPropagation(); handleSelectUser(user.id); }}
+                      className="w-4 h-4 rounded border-slate-300 text-emerald-600 focus:ring-emerald-500 cursor-pointer"
+                    />
+                    <div>
+                      <p className="text-sm font-bold text-slate-800">{user.fullName}</p>
+                      <p className="text-xs text-slate-500">@{user.username}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); handleToggleStatus(user); }}
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                      user.isActive
+                        ? 'bg-emerald-100 text-emerald-700'
+                        : 'bg-slate-100 text-slate-500'
+                    }`}
+                  >
+                    {user.isActive ? t('common.active') : t('common.inactive')}
+                  </button>
+                </div>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <p className="text-slate-400 mb-1">{t('pages.userManagement.department')}</p>
+                    <span className={`font-medium ${getDepartmentColor(user.department)}`}>
+                      {getDepartmentLabel(user.department)}
+                    </span>
+                  </div>
+                  <div>
+                    <p className="text-slate-400 mb-1">{t('pages.userManagement.lastLogin')}</p>
+                    <p className="text-slate-700 font-medium">{user.lastLogin || t('pages.userManagement.neverLoggedIn')}</p>
+                  </div>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="p-12 text-center">
+              <Users size={48} className="mx-auto text-slate-300 mb-3" />
+              <p className="text-slate-500 font-medium">
+                {searchQuery || departmentFilter !== 'all' || statusFilter !== 'all'
+                  ? t('pages.userManagement.noResults')
+                  : t('pages.userManagement.noUsers')}
+              </p>
+            </div>
+          )}
+        </div>
         <Pagination
           currentPage={currentPage}
           totalPages={totalPages}
@@ -548,7 +609,7 @@ export function UserManagement() {
           totalItems={filteredUsers.length}
           itemsPerPage={itemsPerPage}
         />
-      </GlassCard>
+      </div>
 
       {/* Add/Edit User Modal */}
       <Modal
@@ -728,9 +789,9 @@ export function UserManagement() {
               <div>
                 <h3 className="text-lg font-bold text-slate-800">{selectedUser.fullName}</h3>
                 <p className="text-slate-500">@{selectedUser.username}</p>
-                <Badge type={getDepartmentBadgeType(selectedUser.department)}>
+                <span className={`text-sm font-medium ${getDepartmentColor(selectedUser.department)}`}>
                   {getDepartmentLabel(selectedUser.department)}
-                </Badge>
+                </span>
               </div>
             </div>
 

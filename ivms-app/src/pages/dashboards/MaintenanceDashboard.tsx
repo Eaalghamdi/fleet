@@ -4,13 +4,13 @@ import {
   Clock,
   CheckCircle2,
   AlertTriangle,
-  Package,
   Calendar,
-  Play,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { StatCard, Badge, GlassCard } from '../../components/ui';
+import { StatCard, GlassCard } from '../../components/ui';
 import { useApp } from '../../contexts/AppContext';
+import { getVehicleExpiryAlerts } from '../../utils/expiryUtils';
+import { ExpiryAlertsSection } from '../../components/dashboard/ExpiryAlertsSection';
 
 // Mock pending triage data
 const mockPendingTriage = [
@@ -33,7 +33,13 @@ const mockScheduled = [
 
 export function MaintenanceDashboard() {
   const { t } = useTranslation();
-  const { maintenance, inventory, showToast } = useApp();
+  const { vehicles, maintenance, inventory } = useApp();
+
+  const maintenanceAlerts = useMemo(() => {
+    const allAlerts = getVehicleExpiryAlerts(vehicles);
+    return allAlerts.filter(a => a.field === 'nextMaintenance');
+  }, [vehicles]);
+
   const [activeTab, setActiveTab] = useState<'triage' | 'inprogress' | 'scheduled' | 'parts'>('triage');
 
   const stats = useMemo(() => {
@@ -44,21 +50,7 @@ export function MaintenanceDashboard() {
     return { pendingTriage, inProgress, scheduled, completedThisMonth };
   }, [maintenance]);
 
-  const handleTriageComplete = (id: string, type: 'internal' | 'external') => {
-    showToast(t('dashboards.maintenance.triageCompleted', { id, type: t(`dashboards.maintenance.${type}`) }), 'success');
-  };
-
-  const handleStartWork = (id: string) => {
-    showToast(t('dashboards.maintenance.workStarted', { id }), 'success');
-  };
-
-  const handleCompleteWork = (id: string) => {
-    showToast(t('dashboards.maintenance.workCompleted', { id }), 'success');
-  };
-
-  const handleRequestParts = (id: string) => {
-    showToast(t('dashboards.maintenance.partsRequested', { id }), 'info');
-  };
+  const lowStockCount = inventory.filter(i => i.quantity <= i.minStock).length;
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-top-2 duration-700">
@@ -100,6 +92,9 @@ export function MaintenanceDashboard() {
         />
       </div>
 
+      {/* Expiry Alerts */}
+      <ExpiryAlertsSection alerts={maintenanceAlerts} maxVisible={6} />
+
       {/* Main Card with Tabs */}
       <GlassCard>
         {/* Tab Navigation */}
@@ -109,7 +104,7 @@ export function MaintenanceDashboard() {
               { id: 'triage', label: t('dashboards.maintenance.triage'), count: stats.pendingTriage },
               { id: 'inprogress', label: t('dashboards.maintenance.inProgressTab'), count: stats.inProgress },
               { id: 'scheduled', label: t('dashboards.maintenance.scheduledTab'), count: stats.scheduled },
-              { id: 'parts', label: t('dashboards.maintenance.partsRequest') },
+              { id: 'parts', label: t('dashboards.maintenance.partsRequest'), count: lowStockCount > 0 ? lowStockCount : undefined },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -122,7 +117,7 @@ export function MaintenanceDashboard() {
               >
                 {tab.label}
                 {tab.count !== undefined && tab.count > 0 && (
-                  <span className="bg-amber-500 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                  <span className="bg-slate-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
                     {tab.count}
                   </span>
                 )}
@@ -133,197 +128,262 @@ export function MaintenanceDashboard() {
 
         {/* Triage Tab Content */}
         {activeTab === 'triage' && (
-          <div className="p-6">
+          <>
             {mockPendingTriage.length === 0 ? (
-              <div className="text-center py-8 text-slate-400">
+              <div className="text-center py-12">
                 <CheckCircle2 size={48} className="mx-auto mb-4 text-emerald-500" />
                 <h3 className="text-lg font-medium text-slate-600 mb-2">{t('dashboards.maintenance.noPendingTriageRequests')}</h3>
               </div>
             ) : (
-              <div className="space-y-4">
-                {mockPendingTriage.map((req) => (
-                  <div key={req.id} className="p-4 bg-slate-50 rounded-xl border border-slate-100">
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-emerald-600 font-bold">{req.id}</span>
-                          <Badge type="warning">{t('dashboards.maintenance.awaitingTriage')}</Badge>
+              <>
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full rtl:text-right ltr:text-left">
+                    <thead>
+                      <tr className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 bg-slate-50/30">
+                        <th className="px-6 py-4">{t('dashboards.maintenance.requestId')}</th>
+                        <th className="px-6 py-4">{t('dashboards.garage.theVehicle')}</th>
+                        <th className="px-6 py-4">{t('common.description')}</th>
+                        <th className="px-6 py-4">{t('dashboards.maintenance.reportedBy')}</th>
+                        <th className="px-6 py-4">{t('common.date')}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {mockPendingTriage.map((req) => (
+                        <tr key={req.id} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="px-6 py-4 font-bold text-emerald-600 text-sm">{req.id}</td>
+                          <td className="px-6 py-4">
+                            <p className="text-sm font-bold text-slate-800">{req.vehicle}</p>
+                            <p className="text-xs text-slate-500">{req.brand}</p>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-slate-600 max-w-xs">{req.description}</td>
+                          <td className="px-6 py-4 text-sm text-slate-600">{req.reportedBy}</td>
+                          <td className="px-6 py-4 text-sm text-slate-500">{req.date}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="md:hidden divide-y divide-slate-100">
+                  {mockPendingTriage.map((req) => (
+                    <div key={req.id} className="p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <span className="text-emerald-600 font-bold text-sm">{req.id}</span>
+                          <p className="text-sm font-bold text-slate-800 mt-1">{req.vehicle} - {req.brand}</p>
                         </div>
-                        <p className="text-sm font-bold text-slate-800">{req.vehicle} - {req.brand}</p>
-                        <p className="text-xs text-slate-500">{req.description}</p>
-                        <p className="text-xs text-slate-400 mt-1">{req.reportedBy} • {req.date}</p>
                       </div>
+                      <p className="text-xs text-slate-500 mb-2">{req.description}</p>
+                      <p className="text-xs text-slate-400">{req.reportedBy} • {req.date}</p>
                     </div>
-                    <div className="border-t border-slate-200 pt-3 mt-3">
-                      <p className="text-xs text-slate-500 mb-2">{t('dashboards.maintenance.classifyMaintenanceType')}</p>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleTriageComplete(req.id, 'internal')}
-                          className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-all"
-                        >
-                          {t('dashboards.maintenance.internalMaintenance')}
-                        </button>
-                        <button
-                          onClick={() => handleTriageComplete(req.id, 'external')}
-                          className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-bold hover:bg-blue-700 transition-all"
-                        >
-                          {t('dashboards.maintenance.externalMaintenance')}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </>
             )}
-          </div>
+          </>
         )}
 
         {/* In Progress Tab Content */}
         {activeTab === 'inprogress' && (
-          <div className="p-6">
+          <>
             {mockInProgress.length === 0 ? (
-              <div className="text-center py-8 text-slate-400">
-                <Wrench size={48} className="mx-auto mb-4" />
+              <div className="text-center py-12">
+                <Wrench size={48} className="mx-auto mb-4 text-slate-300" />
                 <h3 className="text-lg font-medium text-slate-600 mb-2">{t('dashboards.maintenance.noWorkInProgress')}</h3>
               </div>
             ) : (
-              <div className="space-y-4">
-                {mockInProgress.map((task) => (
-                  <div
-                    key={task.id}
-                    className="p-4 bg-slate-50 rounded-xl border border-slate-100 hover:border-slate-200 transition-colors"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-emerald-600 font-bold">{task.id}</span>
-                          <Badge type="info">{t('dashboards.maintenance.inProgressTab')}</Badge>
+              <>
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full rtl:text-right ltr:text-left">
+                    <thead>
+                      <tr className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 bg-slate-50/30">
+                        <th className="px-6 py-4">{t('dashboards.maintenance.requestId')}</th>
+                        <th className="px-6 py-4">{t('dashboards.garage.theVehicle')}</th>
+                        <th className="px-6 py-4">{t('dashboards.maintenance.task')}</th>
+                        <th className="px-6 py-4">{t('dashboards.maintenance.assignee')}</th>
+                        <th className="px-6 py-4">{t('dashboards.maintenance.progress')}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {mockInProgress.map((task) => (
+                        <tr key={task.id} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="px-6 py-4 font-bold text-emerald-600 text-sm">{task.id}</td>
+                          <td className="px-6 py-4 text-sm font-bold text-slate-800">{task.vehicle}</td>
+                          <td className="px-6 py-4 text-sm text-slate-600">{task.task}</td>
+                          <td className="px-6 py-4">
+                            <p className="text-sm text-slate-600">{task.assignee}</p>
+                            <p className="text-xs text-slate-400">{task.startDate}</p>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="flex items-center gap-2">
+                              <div className="w-20 h-2 bg-slate-200 rounded-full overflow-hidden">
+                                <div
+                                  className="h-full bg-emerald-500 rounded-full"
+                                  style={{ width: `${task.progress}%` }}
+                                />
+                              </div>
+                              <span className="text-xs font-bold text-slate-700">{task.progress}%</span>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="md:hidden divide-y divide-slate-100">
+                  {mockInProgress.map((task) => (
+                    <div key={task.id} className="p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <span className="text-emerald-600 font-bold text-sm">{task.id}</span>
+                          <p className="text-sm font-bold text-slate-800 mt-1">{task.vehicle}</p>
                         </div>
-                        <p className="text-sm font-bold text-slate-800">{task.vehicle}</p>
-                        <p className="text-xs text-slate-500">{task.task}</p>
-                        <p className="text-xs text-slate-400 mt-1">{task.assignee} • {t('time.startedAgo')}: {task.startDate}</p>
+                        <span className="text-xs font-bold text-slate-700">{task.progress}%</span>
                       </div>
-                    </div>
-                    <div className="mb-3">
-                      <div className="flex justify-between text-xs mb-1">
-                        <span className="text-slate-500">{t('dashboards.maintenance.progress')}</span>
-                        <span className="font-bold text-slate-700">{task.progress}%</span>
-                      </div>
+                      <p className="text-xs text-slate-500 mb-1">{task.task}</p>
+                      <p className="text-xs text-slate-400 mb-2">{task.assignee} • {task.startDate}</p>
                       <div className="h-2 bg-slate-200 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-emerald-500 rounded-full transition-all"
-                          style={{ width: `${task.progress}%` }}
-                        />
+                        <div className="h-full bg-emerald-500 rounded-full" style={{ width: `${task.progress}%` }} />
                       </div>
                     </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => handleRequestParts(task.id)}
-                        className="flex-1 px-4 py-2 bg-slate-200 text-slate-700 rounded-xl text-sm font-bold hover:bg-slate-300 transition-all flex items-center justify-center gap-2"
-                      >
-                        <Package size={16} /> {t('dashboards.maintenance.requestParts')}
-                      </button>
-                      <button
-                        onClick={() => handleCompleteWork(task.id)}
-                        className="flex-1 px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-all flex items-center justify-center gap-2"
-                      >
-                        <CheckCircle2 size={16} /> {t('dashboards.maintenance.markAsComplete')}
-                      </button>
-                    </div>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </>
             )}
-          </div>
+          </>
         )}
 
         {/* Scheduled Tab Content */}
         {activeTab === 'scheduled' && (
-          <div className="p-6">
+          <>
             {mockScheduled.length === 0 ? (
-              <div className="text-center py-8 text-slate-400">
-                <Calendar size={48} className="mx-auto mb-4" />
+              <div className="text-center py-12">
+                <Calendar size={48} className="mx-auto mb-4 text-slate-300" />
                 <h3 className="text-lg font-medium text-slate-600 mb-2">{t('dashboards.maintenance.noScheduledMaintenance')}</h3>
               </div>
             ) : (
-              <div className="space-y-3">
-                {mockScheduled.map((task) => (
-                  <div key={task.id} className="p-4 bg-slate-50 rounded-xl border border-slate-100 flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-blue-100 rounded-xl flex items-center justify-center text-blue-600">
-                        <Calendar size={24} />
-                      </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="font-bold text-slate-800">{task.vehicle}</span>
-                          <Badge type="info">{task.type}</Badge>
+              <>
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full rtl:text-right ltr:text-left">
+                    <thead>
+                      <tr className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 bg-slate-50/30">
+                        <th className="px-6 py-4">{t('dashboards.garage.theVehicle')}</th>
+                        <th className="px-6 py-4">{t('dashboards.maintenance.task')}</th>
+                        <th className="px-6 py-4">{t('dashboards.maintenance.type')}</th>
+                        <th className="px-6 py-4">{t('dashboards.maintenance.scheduledDate')}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {mockScheduled.map((task) => (
+                        <tr key={task.id} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="px-6 py-4 text-sm font-bold text-slate-800">{task.vehicle}</td>
+                          <td className="px-6 py-4 text-sm text-slate-600">{task.task}</td>
+                          <td className="px-6 py-4 text-sm text-slate-600">{task.type}</td>
+                          <td className="px-6 py-4 text-sm text-slate-500">{task.scheduledDate}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="md:hidden divide-y divide-slate-100">
+                  {mockScheduled.map((task) => (
+                    <div key={task.id} className="p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <p className="text-sm font-bold text-slate-800">{task.vehicle}</p>
+                          <p className="text-xs text-slate-500">{task.task}</p>
                         </div>
-                        <p className="text-sm text-slate-600">{task.task}</p>
-                        <p className="text-xs text-slate-400">{t('dashboards.maintenance.scheduledDate')} {task.scheduledDate}</p>
+                        <span className="text-xs text-slate-500">{task.type}</span>
                       </div>
+                      <p className="text-xs text-slate-400">{task.scheduledDate}</p>
                     </div>
-                    <button
-                      onClick={() => handleStartWork(task.id)}
-                      className="px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-bold hover:bg-emerald-700 transition-all flex items-center gap-2"
-                    >
-                      <Play size={16} /> {t('dashboards.maintenance.startWork')}
-                    </button>
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              </>
             )}
-          </div>
+          </>
         )}
 
-        {/* Parts Request Tab Content */}
+        {/* Parts Tab Content */}
         {activeTab === 'parts' && (
-          <div className="p-6">
-            <div className="space-y-4">
-              <div className="p-4 bg-amber-50 border border-amber-100 rounded-xl">
+          <>
+            {lowStockCount > 0 && (
+              <div className="p-4 mx-6 mt-4 bg-amber-50 border border-amber-100 rounded-xl">
                 <div className="flex items-start gap-3">
                   <AlertTriangle className="text-amber-600 mt-0.5" size={20} />
                   <div>
                     <p className="text-sm font-bold text-slate-800">{t('dashboards.maintenance.lowStockParts')}</p>
                     <p className="text-xs text-slate-500 mt-1">
-                      {t('dashboards.maintenance.partsNeedReorder', { count: inventory.filter(i => i.quantity <= i.minStock).length })}
+                      {t('dashboards.maintenance.partsNeedReorder', { count: lowStockCount })}
                     </p>
                   </div>
                 </div>
               </div>
+            )}
 
-              <div className="border-t border-slate-100 pt-4">
-                <h4 className="text-sm font-bold text-slate-700 mb-3">{t('dashboards.maintenance.availableParts')}</h4>
-                <div className="space-y-2">
-                  {inventory.slice(0, 5).map((item) => (
-                    <div
-                      key={item.id}
-                      className={`p-3 rounded-xl border flex items-center justify-between ${
-                        item.quantity <= item.minStock
-                          ? 'bg-red-50 border-red-100'
-                          : 'bg-slate-50 border-slate-100'
-                      }`}
-                    >
-                      <div>
-                        <p className="text-sm font-bold text-slate-800">{item.name}</p>
-                        <p className="text-xs text-slate-500">{item.category}</p>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <span className={`font-bold ${item.quantity <= item.minStock ? 'text-red-600' : 'text-slate-700'}`}>
-                          {item.quantity} {t('dashboards.maintenance.available')}
+            {inventory.length === 0 ? (
+              <div className="text-center py-12">
+                <CheckCircle2 size={48} className="mx-auto mb-4 text-emerald-500" />
+                <h3 className="text-lg font-medium text-slate-600 mb-2">{t('dashboards.maintenance.availableParts')}</h3>
+              </div>
+            ) : (
+              <>
+                {/* Desktop Table */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full rtl:text-right ltr:text-left">
+                    <thead>
+                      <tr className="text-[10px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 bg-slate-50/30">
+                        <th className="px-6 py-4">{t('pages.inventory.item')}</th>
+                        <th className="px-6 py-4">{t('pages.inventory.category')}</th>
+                        <th className="px-6 py-4">{t('pages.inventory.available')}</th>
+                        <th className="px-6 py-4">{t('pages.inventory.minStock')}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-50">
+                      {inventory.slice(0, 10).map((item) => (
+                        <tr key={item.id} className="hover:bg-slate-50/50 transition-colors">
+                          <td className="px-6 py-4 text-sm font-bold text-slate-800">{item.name}</td>
+                          <td className="px-6 py-4 text-sm text-slate-600">{item.category}</td>
+                          <td className="px-6 py-4">
+                            <span className={`text-sm font-bold ${item.quantity <= item.minStock ? 'text-rose-600' : 'text-slate-700'}`}>
+                              {item.quantity}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-slate-500">{item.minStock}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Mobile Cards */}
+                <div className="md:hidden divide-y divide-slate-100">
+                  {inventory.slice(0, 10).map((item) => (
+                    <div key={item.id} className="p-4">
+                      <div className="flex items-start justify-between mb-2">
+                        <div>
+                          <p className="text-sm font-bold text-slate-800">{item.name}</p>
+                          <p className="text-xs text-slate-500">{item.category}</p>
+                        </div>
+                        <span className={`text-sm font-bold ${item.quantity <= item.minStock ? 'text-rose-600' : 'text-slate-700'}`}>
+                          {item.quantity}
                         </span>
-                        <button
-                          onClick={() => showToast(t('dashboards.maintenance.requestingPart', { name: item.name }), 'info')}
-                          className="px-3 py-1 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700"
-                        >
-                          {t('dashboards.maintenance.request')}
-                        </button>
                       </div>
+                      <p className="text-xs text-slate-400">{t('pages.inventory.minStock')}: {item.minStock}</p>
                     </div>
                   ))}
                 </div>
-              </div>
-            </div>
-          </div>
+              </>
+            )}
+          </>
         )}
       </GlassCard>
     </div>

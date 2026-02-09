@@ -1,9 +1,14 @@
+import { useTranslation } from 'react-i18next';
+
 interface HealthIndicatorProps {
   value: number;
   label?: string;
 }
 
-export function HealthIndicator({ value, label = 'صحة المركبة' }: HealthIndicatorProps) {
+export function HealthIndicator({ value, label }: HealthIndicatorProps) {
+  const { t } = useTranslation();
+  const displayLabel = label || t('ui.vehicleHealth');
+
   const getColor = (v: number) => {
     if (v > 80) return 'bg-emerald-500';
     if (v > 50) return 'bg-amber-500';
@@ -13,7 +18,7 @@ export function HealthIndicator({ value, label = 'صحة المركبة' }: Heal
   return (
     <div className="flex flex-col gap-1 w-full">
       <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase tracking-tight">
-        <span>{label}</span>
+        <span>{displayLabel}</span>
         <span>{value}%</span>
       </div>
       <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">

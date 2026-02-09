@@ -9,7 +9,7 @@ import {
   Trash2,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { GlassCard, Badge, ConfirmDialog, Modal, Pagination } from '../components/ui';
+import { GlassCard, ConfirmDialog, Modal, Pagination } from '../components/ui';
 import { MaintenanceModal } from '../components/modals/MaintenanceModal';
 import { useApp } from '../contexts/AppContext';
 import { useAuth } from '../contexts/AuthContext';
@@ -185,26 +185,28 @@ export function Maintenance() {
       </div>
 
       {/* Maintenance Tasks Table */}
-      <div>
-        {/* Section Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-          <h4 className="font-bold text-slate-800">{t('pages.maintenance.maintenanceLog')}</h4>
-          <div className="relative w-full md:w-auto">
-            <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
-            <input
-              type="text"
-              placeholder={t('pages.maintenance.searchByOrder')}
-              value={searchTerm}
-              onChange={(e) => {
-                setSearchTerm(e.target.value);
-                setCurrentPage(1);
-              }}
-              className="bg-white border border-slate-200 rounded-xl py-2 pr-10 pl-4 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none transition-all w-full md:w-64"
-            />
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        {/* Search and Filters */}
+        <div className="p-4 sm:p-6 border-b border-gray-50 space-y-4">
+          <div className="flex flex-col md:flex-row justify-between gap-4">
+            <h4 className="font-bold text-slate-800">{t('pages.maintenance.maintenanceLog')}</h4>
+            <div className="relative flex-1 md:flex-none md:w-64">
+              <div className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
+                <Search size={18} />
+              </div>
+              <input
+                type="text"
+                placeholder={t('pages.maintenance.searchByOrder')}
+                value={searchTerm}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="w-full pr-10 pl-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
+              />
+            </div>
           </div>
         </div>
-
-        <GlassCard>
 
         {/* Empty State */}
         {paginatedMaintenance.length === 0 && (
@@ -244,7 +246,7 @@ export function Maintenance() {
                   <tr
                     key={task.id}
                     onClick={() => setViewingMaintenance(task)}
-                    className="hover:bg-slate-50/50 transition-colors group cursor-pointer"
+                    className="hover:bg-slate-50/50 transition-colors cursor-pointer"
                   >
                     <td className="px-6 py-4 font-bold text-emerald-600 text-sm">{task.id}</td>
                     <td className="px-6 py-4">
@@ -256,9 +258,11 @@ export function Maintenance() {
                       </span>
                     </td>
                     <td className="px-6 py-4">
-                      <Badge type={task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning' : 'info'}>
+                      <span className={`text-xs font-medium ${
+                        task.priority === 'high' ? 'text-rose-600' : task.priority === 'medium' ? 'text-amber-600' : 'text-slate-600'
+                      }`}>
                         {t(getPriorityKey(task.priority))}
-                      </Badge>
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${getStatusStyle(task.status)}`}>
@@ -292,9 +296,11 @@ export function Maintenance() {
                   <span className="text-xs bg-slate-100 px-2.5 py-1 rounded-lg text-slate-600 font-medium">
                     {t(getTypeKey(task.type))}
                   </span>
-                  <Badge type={task.priority === 'high' ? 'danger' : task.priority === 'medium' ? 'warning' : 'info'}>
+                  <span className={`text-xs font-medium ${
+                    task.priority === 'high' ? 'text-rose-600' : task.priority === 'medium' ? 'text-amber-600' : 'text-slate-600'
+                  }`}>
                     {t(getPriorityKey(task.priority))}
-                  </Badge>
+                  </span>
                   <span className={`text-[10px] font-bold px-2.5 py-1 rounded-full border ${getStatusStyle(task.status)}`}>
                     {t(getStatusKey(task.status))}
                   </span>
@@ -313,7 +319,6 @@ export function Maintenance() {
           totalItems={filteredMaintenance.length}
           itemsPerPage={ITEMS_PER_PAGE}
         />
-        </GlassCard>
       </div>
 
       {/* Add Modal */}
@@ -357,9 +362,11 @@ export function Maintenance() {
               </div>
               <div>
                 <p className="text-xs text-slate-400 mb-1">{t('pages.maintenance.priority')}</p>
-                <Badge type={viewingMaintenance.priority === 'high' ? 'danger' : viewingMaintenance.priority === 'medium' ? 'warning' : 'info'}>
+                <span className={`text-sm font-medium ${
+                  viewingMaintenance.priority === 'high' ? 'text-rose-600' : viewingMaintenance.priority === 'medium' ? 'text-amber-600' : 'text-slate-600'
+                }`}>
                   {t(getPriorityKey(viewingMaintenance.priority))}
-                </Badge>
+                </span>
               </div>
               <div>
                 <p className="text-xs text-slate-400 mb-1">{t('pages.maintenance.status')}</p>

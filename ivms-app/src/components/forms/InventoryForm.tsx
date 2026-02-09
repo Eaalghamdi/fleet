@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { InventoryItem } from '../../types';
 
 interface InventoryFormProps {
@@ -7,12 +8,14 @@ interface InventoryFormProps {
   onCancel: () => void;
 }
 
-const categoryOptions = ['سوائل', 'فرامل', 'فلاتر', 'إطارات', 'بطاريات', 'كهرباء', 'أخرى'];
+const categoryKeys = ['liquids', 'brakes', 'filters', 'tires', 'batteries', 'electrical', 'other'] as const;
 
 export function InventoryForm({ item, onSubmit, onCancel }: InventoryFormProps) {
+  const { t } = useTranslation();
+
   const [formData, setFormData] = useState({
     name: '',
-    category: 'أخرى',
+    category: t('forms.inventory.other'),
     quantity: 0,
     minStock: 10,
   });
@@ -39,7 +42,7 @@ export function InventoryForm({ item, onSubmit, onCancel }: InventoryFormProps) 
         {/* Name */}
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-slate-700 mb-1">
-            اسم الصنف <span className="text-rose-500">*</span>
+            {t('forms.inventory.itemName')} <span className="text-rose-500">*</span>
           </label>
           <input
             type="text"
@@ -47,23 +50,23 @@ export function InventoryForm({ item, onSubmit, onCancel }: InventoryFormProps) 
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
             className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
-            placeholder="مثال: زيت محرك 5W-30"
+            placeholder={t('forms.inventory.namePlaceholder')}
           />
         </div>
 
         {/* Category */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
-            الفئة
+            {t('forms.inventory.category')}
           </label>
           <select
             value={formData.category}
             onChange={(e) => setFormData({ ...formData, category: e.target.value })}
             className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
           >
-            {categoryOptions.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat}
+            {categoryKeys.map((key) => (
+              <option key={key} value={t(`forms.inventory.${key}`)}>
+                {t(`forms.inventory.${key}`)}
               </option>
             ))}
           </select>
@@ -72,7 +75,7 @@ export function InventoryForm({ item, onSubmit, onCancel }: InventoryFormProps) 
         {/* Quantity */}
         <div>
           <label className="block text-sm font-medium text-slate-700 mb-1">
-            الكمية الحالية
+            {t('forms.inventory.currentQuantity')}
           </label>
           <input
             type="number"
@@ -86,7 +89,7 @@ export function InventoryForm({ item, onSubmit, onCancel }: InventoryFormProps) 
         {/* Min Stock */}
         <div className="md:col-span-2">
           <label className="block text-sm font-medium text-slate-700 mb-1">
-            الحد الأدنى للمخزون
+            {t('forms.inventory.minimumStock')}
           </label>
           <input
             type="number"
@@ -95,7 +98,7 @@ export function InventoryForm({ item, onSubmit, onCancel }: InventoryFormProps) 
             onChange={(e) => setFormData({ ...formData, minStock: parseInt(e.target.value) || 0 })}
             className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500"
           />
-          <p className="text-xs text-slate-400 mt-1">سيتم تنبيهك عندما تنخفض الكمية عن هذا الحد</p>
+          <p className="text-xs text-slate-400 mt-1">{t('forms.inventory.minimumStockHint')}</p>
         </div>
       </div>
 
@@ -106,13 +109,13 @@ export function InventoryForm({ item, onSubmit, onCancel }: InventoryFormProps) 
           onClick={onCancel}
           className="flex-1 px-4 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
         >
-          إلغاء
+          {t('common.cancel')}
         </button>
         <button
           type="submit"
           className="flex-1 px-4 py-3 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-medium transition-colors"
         >
-          {item ? 'حفظ التغييرات' : 'إضافة الصنف'}
+          {item ? t('forms.inventory.saveChanges') : t('forms.inventory.addItem')}
         </button>
       </div>
     </form>

@@ -15,13 +15,6 @@ const iconStyles = {
   info: 'bg-slate-50 text-slate-600',
 };
 
-const trendStyles = {
-  success: 'bg-emerald-50 text-emerald-600',
-  danger: 'bg-rose-50 text-rose-500',
-  warning: 'bg-amber-50 text-amber-600',
-  info: 'bg-slate-50 text-slate-600',
-};
-
 export function StatCard({ title, value, icon: Icon, trend, trendType = 'success' }: StatCardProps) {
   return (
     <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:shadow-md hover:border-emerald-200 transition-all group">
@@ -30,7 +23,7 @@ export function StatCard({ title, value, icon: Icon, trend, trendType = 'success
           <Icon size={22} />
         </div>
         {trend && (
-          <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${trendStyles[trendType]}`}>
+          <span className="text-xs font-medium text-slate-500">
             {trend}
           </span>
         )}

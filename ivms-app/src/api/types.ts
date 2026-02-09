@@ -10,9 +10,7 @@ export type Department = (typeof Department)[keyof typeof Department];
 // Role constants
 export const Role = {
   SUPER_ADMIN: 'SUPER_ADMIN',
-  ADMIN: 'ADMIN',
   OPERATOR: 'OPERATOR',
-  TECHNICIAN: 'TECHNICIAN',
 } as const;
 export type Role = (typeof Role)[keyof typeof Role];
 
@@ -20,9 +18,7 @@ export type Role = (typeof Role)[keyof typeof Role];
 export const CarType = {
   SEDAN: 'SEDAN',
   SUV: 'SUV',
-  VAN: 'VAN',
-  PICKUP: 'PICKUP',
-  BUS: 'BUS',
+  TRUCK: 'TRUCK',
 } as const;
 export type CarType = (typeof CarType)[keyof typeof CarType];
 
@@ -30,6 +26,7 @@ export type CarType = (typeof CarType)[keyof typeof CarType];
 export const CarStatus = {
   AVAILABLE: 'AVAILABLE',
   ASSIGNED: 'ASSIGNED',
+  IN_TRANSIT: 'IN_TRANSIT',
   UNDER_MAINTENANCE: 'UNDER_MAINTENANCE',
   DELETED: 'DELETED',
 } as const;
@@ -74,11 +71,9 @@ export type TrackingMode = (typeof TrackingMode)[keyof typeof TrackingMode];
 
 // PurchaseRequestStatus constants
 export const PurchaseRequestStatus = {
-  PENDING: 'PENDING',
+  PENDING_APPROVAL: 'PENDING_APPROVAL',
   APPROVED: 'APPROVED',
   REJECTED: 'REJECTED',
-  ORDERED: 'ORDERED',
-  RECEIVED: 'RECEIVED',
 } as const;
 export type PurchaseRequestStatus = (typeof PurchaseRequestStatus)[keyof typeof PurchaseRequestStatus];
 

@@ -6,12 +6,11 @@ import {
   Plus,
   Search,
   ShoppingCart,
-  LayoutGrid,
-  List,
   CheckCircle2,
   Pencil,
   Trash2,
-  Filter
+  Filter,
+  DollarSign
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { ConfirmDialog, Modal, Pagination } from '../components/ui';
@@ -30,7 +29,6 @@ export function Inventory() {
   const { hasDepartment } = useAuth();
   const isAdmin = hasDepartment(Department.ADMIN);
   const [searchQuery, setSearchQuery] = useState('');
-  const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [stockFilter, setStockFilter] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
@@ -141,7 +139,7 @@ export function Inventory() {
           { label: t('pages.inventory.totalItems'), value: stats.totalItems.toLocaleString(), icon: Package, color: 'blue' },
           { label: t('pages.inventory.itemsBelowMinimum'), value: stats.lowStockItems.toString(), icon: AlertTriangle, color: 'rose' },
           { label: t('pages.inventory.activeSupplyOrders'), value: '5', icon: RefreshCcw, color: 'amber' },
-          { label: t('pages.inventory.inventoryValue'), value: `${(stats.totalValue / 1000).toFixed(0)}k`, icon: LayoutGrid, color: 'emerald' },
+          { label: t('pages.inventory.inventoryValue'), value: `${(stats.totalValue / 1000).toFixed(0)}k`, icon: DollarSign, color: 'emerald' },
         ].map((stat, i) => (
           <div key={i} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
@@ -159,26 +157,10 @@ export function Inventory() {
       </div>
 
       {/* Data Table */}
-      <div className="bg-white border border-slate-200 rounded-2xl sm:rounded-3xl overflow-hidden shadow-sm">
-        <div className="p-4 sm:p-6 border-b border-slate-100 space-y-4">
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+        <div className="p-4 sm:p-6 border-b border-gray-50 space-y-4">
           <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-            <div className="flex items-center gap-3 sm:gap-4">
-              <div className="flex border border-slate-200 rounded-lg p-1 bg-slate-50">
-                <button
-                  onClick={() => setViewMode('list')}
-                  className={`p-1.5 rounded-md ${viewMode === 'list' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400'}`}
-                >
-                  <List size={16}/>
-                </button>
-                <button
-                  onClick={() => setViewMode('grid')}
-                  className={`p-1.5 rounded-md ${viewMode === 'grid' ? 'bg-white shadow-sm text-emerald-600' : 'text-slate-400'}`}
-                >
-                  <LayoutGrid size={16}/>
-                </button>
-              </div>
-              <h4 className="font-bold text-slate-800 text-sm sm:text-base">{t('pages.inventory.centralWarehouseList')}</h4>
-            </div>
+            <h4 className="font-bold text-slate-800 text-sm sm:text-base">{t('pages.inventory.centralWarehouseList')}</h4>
             <div className="relative w-full md:w-64">
               <Search className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400" size={16} />
               <input
@@ -186,7 +168,7 @@ export function Inventory() {
                 placeholder={t('pages.inventory.searchPlaceholder')}
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pr-10 pl-4 text-xs focus:ring-2 focus:ring-emerald-500 outline-none"
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl py-2 pr-10 pl-4 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
               />
             </div>
           </div>
@@ -245,45 +227,43 @@ export function Inventory() {
           </div>
         )}
 
-        {viewMode === 'list' && paginatedItems.length > 0 ? (
+        {paginatedItems.length > 0 && (
           <>
             {/* Desktop Table */}
             <div className="hidden md:block overflow-x-auto">
-              <table className="w-full text-right">
+              <table className="w-full rtl:text-right ltr:text-left">
                 <thead>
-                  <tr className="bg-slate-50 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                    <th className="px-8 py-4">{t('pages.inventory.item')}</th>
-                    <th className="px-8 py-4">{t('pages.inventory.barcodeSku')}</th>
-                    <th className="px-8 py-4">{t('pages.inventory.category')}</th>
-                    <th className="px-8 py-4">{t('pages.inventory.available')}</th>
-                    <th className="px-8 py-4">{t('common.status')}</th>
+                  <tr className="text-xs text-slate-500 border-b border-slate-200">
+                    <th className="py-3 px-4 text-start font-semibold">{t('pages.inventory.item')}</th>
+                    <th className="py-3 px-4 text-start font-semibold">{t('pages.inventory.barcodeSku')}</th>
+                    <th className="py-3 px-4 text-start font-semibold">{t('pages.inventory.category')}</th>
+                    <th className="py-3 px-4 text-start font-semibold">{t('pages.inventory.available')}</th>
+                    <th className="py-3 px-4 text-start font-semibold">{t('common.status')}</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="text-sm">
                   {paginatedItems.map((item) => (
                     <tr
                       key={item.id}
                       onClick={() => setViewingItem(item)}
-                      className="hover:bg-slate-50/50 cursor-pointer"
+                      className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors"
                     >
-                      <td className="px-8 py-5">
-                        <p className="font-bold text-slate-800 text-sm">{item.name}</p>
-                      </td>
-                      <td className="px-8 py-5 text-xs text-slate-500 font-mono tracking-tighter">{item.id}</td>
-                      <td className="px-8 py-5 text-xs text-slate-500">{item.category}</td>
-                      <td className="px-8 py-5">
+                      <td className="py-3 px-4 font-medium text-slate-800">{item.name}</td>
+                      <td className="py-3 px-4 text-slate-500 font-mono text-xs">{item.id}</td>
+                      <td className="py-3 px-4 text-slate-600">{item.category}</td>
+                      <td className="py-3 px-4">
                         <div className="flex flex-col">
-                          <span className="text-sm font-bold text-slate-700">{item.quantity} {t('pages.inventory.piece')}</span>
-                          <span className="text-[10px] text-slate-400">{t('pages.inventory.minStock')}: {item.minStock}</span>
+                          <span className="font-medium text-slate-700">{item.quantity} {t('pages.inventory.piece')}</span>
+                          <span className="text-xs text-slate-400">{t('pages.inventory.minStock')}: {item.minStock}</span>
                         </div>
                       </td>
-                      <td className="px-8 py-5">
+                      <td className="py-3 px-4">
                         {item.quantity <= item.minStock ? (
-                          <span className="flex items-center gap-1.5 text-rose-600 text-[10px] font-bold bg-rose-50 px-2 py-1 rounded-md border border-rose-100 w-fit">
+                          <span className="inline-flex items-center gap-1.5 text-rose-600 text-xs font-medium bg-rose-50 px-2.5 py-1 rounded-full">
                             <AlertTriangle size={12} /> {t('pages.inventory.veryLow')}
                           </span>
                         ) : (
-                          <span className="flex items-center gap-1.5 text-emerald-600 text-[10px] font-bold bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100 w-fit">
+                          <span className="inline-flex items-center gap-1.5 text-emerald-600 text-xs font-medium bg-emerald-50 px-2.5 py-1 rounded-full">
                             <CheckCircle2 size={12} /> {t('pages.inventory.available')}
                           </span>
                         )}
@@ -294,25 +274,25 @@ export function Inventory() {
               </table>
             </div>
 
-            {/* Mobile Cards for List View */}
+            {/* Mobile Cards */}
             <div className="md:hidden divide-y divide-slate-100">
               {paginatedItems.map((item) => (
                 <div
                   key={item.id}
                   onClick={() => setViewingItem(item)}
-                  className="p-4 hover:bg-slate-50/50 transition-colors cursor-pointer"
+                  className="p-4 hover:bg-slate-50 transition-colors cursor-pointer"
                 >
                   <div className="flex items-start justify-between mb-2">
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-slate-800 text-sm">{item.name}</p>
+                      <p className="font-medium text-slate-800">{item.name}</p>
                       <p className="text-xs text-slate-500 mt-0.5">{item.category}</p>
                     </div>
                     {item.quantity <= item.minStock ? (
-                      <span className="flex items-center gap-1 text-rose-600 text-[10px] font-bold bg-rose-50 px-2 py-1 rounded-md border border-rose-100 shrink-0">
+                      <span className="inline-flex items-center gap-1 text-rose-600 text-xs font-medium bg-rose-50 px-2 py-1 rounded-full shrink-0">
                         <AlertTriangle size={10} /> {t('pages.inventory.lowStock')}
                       </span>
                     ) : (
-                      <span className="flex items-center gap-1 text-emerald-600 text-[10px] font-bold bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100 shrink-0">
+                      <span className="inline-flex items-center gap-1 text-emerald-600 text-xs font-medium bg-emerald-50 px-2 py-1 rounded-full shrink-0">
                         <CheckCircle2 size={10} /> {t('pages.inventory.available')}
                       </span>
                     )}
@@ -321,55 +301,16 @@ export function Inventory() {
                     <div className="flex items-center gap-4">
                       <div>
                         <p className="text-lg font-bold text-slate-900">{item.quantity}</p>
-                        <p className="text-[10px] text-slate-400">{t('pages.inventory.minStock')}: {item.minStock}</p>
+                        <p className="text-xs text-slate-400">{t('pages.inventory.minStock')}: {item.minStock}</p>
                       </div>
-                      <p className="text-[10px] text-slate-400 font-mono">{item.id}</p>
+                      <p className="text-xs text-slate-400 font-mono">{item.id}</p>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
           </>
-        ) : viewMode === 'grid' && paginatedItems.length > 0 ? (
-          <div className="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {paginatedItems.map((item) => (
-              <div
-                key={item.id}
-                onClick={() => setViewingItem(item)}
-                className={`bg-white p-4 sm:p-5 rounded-2xl border shadow-sm hover:shadow-md transition-shadow cursor-pointer ${
-                  item.quantity <= item.minStock ? 'border-rose-200' : 'border-slate-100'
-                }`}
-              >
-                <div className="flex justify-between items-start mb-3 sm:mb-4">
-                  <div
-                    className={`p-2.5 sm:p-3 rounded-xl ${
-                      item.quantity <= item.minStock ? 'bg-rose-50 text-rose-500' : 'bg-emerald-50 text-emerald-600'
-                    }`}
-                  >
-                    <Package size={20} />
-                  </div>
-                  {item.quantity <= item.minStock ? (
-                    <span className="flex items-center gap-1 text-rose-600 text-[10px] font-bold bg-rose-50 px-2 py-1 rounded-md border border-rose-100">
-                      <AlertTriangle size={10} /> {t('pages.inventory.lowStock')}
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1 text-emerald-600 text-[10px] font-bold bg-emerald-50 px-2 py-1 rounded-md border border-emerald-100">
-                      <CheckCircle2 size={10} /> {t('pages.inventory.available')}
-                    </span>
-                  )}
-                </div>
-                <h3 className="text-slate-800 font-bold text-sm mb-1">{item.name}</h3>
-                <p className="text-slate-500 text-xs mb-3">{item.category}</p>
-                <div className="flex justify-between items-end">
-                  <div>
-                    <p className="text-xl sm:text-2xl font-bold text-slate-900">{item.quantity}</p>
-                    <p className="text-slate-400 text-[10px] sm:text-xs">{t('pages.inventory.minStock')}: {item.minStock}</p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : null}
+        )}
 
         {/* Pagination */}
         <Pagination
