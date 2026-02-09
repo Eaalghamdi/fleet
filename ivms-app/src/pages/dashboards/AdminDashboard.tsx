@@ -27,6 +27,12 @@ import { StatCard, GlassCard, Modal } from '../../components/ui';
 import { useApp } from '../../contexts/AppContext';
 import { getVehicleExpiryAlerts, getDriverExpiryAlerts } from '../../utils/expiryUtils';
 import { ExpiryAlertsSection } from '../../components/dashboard/ExpiryAlertsSection';
+import {
+  FleetStatusChart,
+  MaintenanceTypeChart,
+  FleetUtilizationChart,
+  InventoryStockChart,
+} from '../../components/charts/AdminCharts';
 
 // Types for request data with comprehensive details
 interface CarRequest {
@@ -316,7 +322,7 @@ const tabs: { key: TabType; icon: typeof Car; color: string; bgColor: string }[]
 
 export function AdminDashboard() {
   const { t } = useTranslation();
-  const { vehicles, drivers, showToast } = useApp();
+  const { vehicles, drivers, maintenance, inventory, showToast } = useApp();
 
   const expiryAlerts = useMemo(() => {
     const vehicleAlerts = getVehicleExpiryAlerts(vehicles);
@@ -1175,6 +1181,29 @@ export function AdminDashboard() {
 
       {/* Expiry Alerts */}
       <ExpiryAlertsSection alerts={expiryAlerts} maxVisible={6} />
+
+      {/* Fleet Analytics Charts */}
+      <div className="space-y-4">
+        <h2 className="text-xl font-bold text-slate-800">{t('dashboards.admin.charts.fleetAnalytics')}</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <GlassCard className="p-5">
+            <h3 className="text-sm font-bold text-slate-700 mb-3">{t('dashboards.admin.charts.fleetStatus')}</h3>
+            <FleetStatusChart vehicles={vehicles} />
+          </GlassCard>
+          <GlassCard className="p-5">
+            <h3 className="text-sm font-bold text-slate-700 mb-3">{t('dashboards.admin.charts.maintenanceByType')}</h3>
+            <MaintenanceTypeChart maintenance={maintenance} />
+          </GlassCard>
+          <GlassCard className="p-5">
+            <h3 className="text-sm font-bold text-slate-700 mb-3">{t('dashboards.admin.charts.fleetUtilization')}</h3>
+            <FleetUtilizationChart vehicles={vehicles} />
+          </GlassCard>
+          <GlassCard className="p-5">
+            <h3 className="text-sm font-bold text-slate-700 mb-3">{t('dashboards.admin.charts.inventoryStock')}</h3>
+            <InventoryStockChart inventory={inventory} />
+          </GlassCard>
+        </div>
+      </div>
 
       {/* Pending Approvals Section with Tabs */}
       <div className="space-y-6">

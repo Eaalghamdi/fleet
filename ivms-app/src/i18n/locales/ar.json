@@ -761,7 +761,25 @@
       "mileage": "الأميال",
       "vin": "رقم الهيكل",
       "year": "سنة الصنع",
-      "newVehicle": "مركبة جديدة"
+      "newVehicle": "مركبة جديدة",
+      "charts": {
+        "fleetAnalytics": "تحليلات الأسطول",
+        "fleetStatus": "حالة الأسطول",
+        "maintenanceByType": "الصيانة حسب النوع",
+        "fleetUtilization": "استخدام الأسطول",
+        "inventoryStock": "مستويات المخزون",
+        "active": "نشط",
+        "inMaintenance": "قيد الصيانة",
+        "inactive": "متوقف",
+        "corrective": "تصحيحية",
+        "preventive": "وقائية",
+        "assigned": "معين",
+        "unassigned": "غير معين",
+        "utilization": "الاستخدام",
+        "vehicles": "المركبات",
+        "currentStock": "المخزون الحالي",
+        "minStock": "الحد الأدنى"
+      }
     },
     "operation": {
       "title": "لوحة تحكم العمليات",

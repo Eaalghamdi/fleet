@@ -761,7 +761,25 @@
       "mileage": "Mileage",
       "vin": "VIN Number",
       "year": "Year",
-      "newVehicle": "New Vehicle"
+      "newVehicle": "New Vehicle",
+      "charts": {
+        "fleetAnalytics": "Fleet Analytics",
+        "fleetStatus": "Fleet Status",
+        "maintenanceByType": "Maintenance by Type",
+        "fleetUtilization": "Fleet Utilization",
+        "inventoryStock": "Inventory Stock Levels",
+        "active": "Active",
+        "inMaintenance": "In Maintenance",
+        "inactive": "Inactive",
+        "corrective": "Corrective",
+        "preventive": "Preventive",
+        "assigned": "Assigned",
+        "unassigned": "Unassigned",
+        "utilization": "Utilization",
+        "vehicles": "Vehicles",
+        "currentStock": "Current Stock",
+        "minStock": "Min Stock"
+      }
     },
     "operation": {
       "title": "Operations Dashboard",
