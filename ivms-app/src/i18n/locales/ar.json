@@ -1023,6 +1023,11 @@
     "expiresToday": "ينتهي اليوم",
     "expiresInDays": "ينتهي خلال {{days}} يوم",
     "moreAlerts": "+{{count}} تنبيهات أخرى",
+    "searchPlaceholder": "بحث في التنبيهات...",
+    "noResults": "لا توجد تنبيهات مطابقة للبحث",
+    "noAlerts": "لا توجد تنبيهات",
+    "showAll": "عرض {{count}} تنبيهات إضافية",
+    "showLess": "عرض أقل",
     "fields": {
       "insuranceExpiry": "انتهاء التأمين",
       "registrationExpiry": "انتهاء الاستمارة",

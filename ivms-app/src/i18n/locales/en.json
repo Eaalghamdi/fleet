@@ -1023,6 +1023,11 @@
     "expiresToday": "Expires today",
     "expiresInDays": "Expires in {{days}} days",
     "moreAlerts": "+{{count}} more alerts",
+    "searchPlaceholder": "Search alerts...",
+    "noResults": "No alerts match your search",
+    "noAlerts": "No alerts",
+    "showAll": "Show {{count}} more alerts",
+    "showLess": "Show less",
     "fields": {
       "insuranceExpiry": "Insurance Expiry",
       "registrationExpiry": "Registration Expiry",
