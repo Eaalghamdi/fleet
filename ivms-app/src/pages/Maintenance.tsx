@@ -131,7 +131,7 @@ export function Maintenance() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-top-2 duration-700">
+    <div className="space-y-5 sm:space-y-8 animate-in fade-in slide-in-from-top-2 duration-700">
       {/* Page Header */}
       <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -151,9 +151,9 @@ export function Maintenance() {
       </header>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-6">
         {/* Fleet Readiness Card */}
-        <GlassCard className="p-6">
+        <GlassCard className="p-4 sm:p-6">
           <p className="text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider">
             {t('pages.maintenance.fleetReadiness')}
           </p>
@@ -161,7 +161,7 @@ export function Maintenance() {
         </GlassCard>
 
         {/* In Progress Tasks */}
-        <GlassCard className="p-6">
+        <GlassCard className="p-4 sm:p-6">
           <p className="text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider">
             {t('pages.maintenance.tasksInProgress')}
           </p>
@@ -172,7 +172,7 @@ export function Maintenance() {
         </GlassCard>
 
         {/* Completed */}
-        <GlassCard className="p-6">
+        <GlassCard className="p-4 sm:p-6">
           <p className="text-slate-400 text-xs font-bold mb-1 uppercase tracking-wider">
             {t('pages.maintenance.completed')}
           </p>

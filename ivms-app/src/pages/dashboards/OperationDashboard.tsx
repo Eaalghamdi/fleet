@@ -210,7 +210,7 @@ export function OperationDashboard() {
       : paginatedRequests;
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-top-2 duration-700">
+    <div className="space-y-5 sm:space-y-8 animate-in fade-in slide-in-from-top-2 duration-700">
       {/* Page Header */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -226,7 +226,7 @@ export function OperationDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           title={t('dashboards.operation.pendingRequests')}
           value={stats.pending.toString()}
@@ -258,7 +258,7 @@ export function OperationDashboard() {
       </div>
 
       {/* Quick Actions */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
           <button
             onClick={handleNewRequest}
             className="p-4 bg-blue-50 hover:bg-blue-100 rounded-xl border border-blue-100 transition-colors flex items-center gap-3"

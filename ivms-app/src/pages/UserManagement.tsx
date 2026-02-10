@@ -306,8 +306,8 @@ export function UserManagement() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <GlassCard className="p-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <GlassCard className="p-3 sm:p-4">
           <div className="flex items-center gap-3">
             <div className="p-2.5 bg-blue-100 rounded-xl">
               <Users size={20} className="text-blue-600" />

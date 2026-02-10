@@ -91,9 +91,9 @@ ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-top-2 duration-700">
+    <div className="space-y-5 sm:space-y-8 animate-in fade-in slide-in-from-top-2 duration-700">
       {/* Stats Cards Row */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           title={t('pages.dashboard.totalVehicles')}
           value={stats.totalVehicles.toString()}
@@ -125,7 +125,7 @@ ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}
       </div>
 
       {/* Fleet Analysis Section */}
-      <div className="space-y-6 pt-2">
+      <div className="space-y-4 sm:space-y-6 pt-2">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-bold text-slate-800">{t('pages.dashboard.fleetEfficiencyAnalysis')}</h2>
           <IconButton icon={Download} label={t('pages.dashboard.pdfReport')} onClick={handleDownloadPDF} />
@@ -137,7 +137,7 @@ ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}
             <p className="text-slate-500">{t('pages.dashboard.noVehiclesToShow')}</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {topVehicles.map((v, i) => (
               <GlassCard
                 key={i}
@@ -187,9 +187,9 @@ ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}
       </div>
 
       {/* Charts Row */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Fuel Consumption Chart */}
-        <GlassCard className="lg:col-span-2 p-6">
+        <GlassCard className="lg:col-span-2 p-4 sm:p-6">
           <div className="flex justify-between items-center mb-6">
             <h3 className="font-bold text-slate-800">{t('pages.dashboard.monthlyFuelConsumption')}</h3>
             <div className="flex gap-2">
@@ -218,8 +218,8 @@ ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}
         </GlassCard>
 
         {/* Fleet Status Donut Chart */}
-        <GlassCard className="p-6">
-          <h3 className="font-bold text-slate-800 mb-6">{t('pages.dashboard.fleetStatusDistribution')}</h3>
+        <GlassCard className="p-4 sm:p-6">
+          <h3 className="font-bold text-slate-800 mb-4 sm:mb-6">{t('pages.dashboard.fleetStatusDistribution')}</h3>
           <div className="flex flex-col items-center">
             <div className="relative w-28 h-28 sm:w-36 sm:h-36 mb-6">
               <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">

@@ -139,7 +139,7 @@ function AppContent() {
         <Header onNavigateToAlerts={() => handleTabChange('alerts')} />
 
         {/* View Content */}
-        <div className="px-4 lg:px-10 pb-10">
+        <div className="px-3 sm:px-4 lg:px-10 pb-6 sm:pb-10">
           {renderView()}
         </div>
       </main>

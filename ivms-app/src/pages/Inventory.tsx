@@ -134,14 +134,14 @@ export function Inventory() {
       </header>
 
       {/* Statistics Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label: t('pages.inventory.totalItems'), value: stats.totalItems.toLocaleString(), icon: Package, color: 'blue' },
           { label: t('pages.inventory.itemsBelowMinimum'), value: stats.lowStockItems.toString(), icon: AlertTriangle, color: 'rose' },
           { label: t('pages.inventory.activeSupplyOrders'), value: '5', icon: RefreshCcw, color: 'amber' },
           { label: t('pages.inventory.inventoryValue'), value: `${(stats.totalValue / 1000).toFixed(0)}k`, icon: DollarSign, color: 'emerald' },
         ].map((stat, i) => (
-          <div key={i} className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div key={i} className="bg-white p-3 sm:p-5 rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
             <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${
               stat.color === 'blue' ? 'bg-blue-50 text-blue-600' :
               stat.color === 'rose' ? 'bg-rose-50 text-rose-600' :
@@ -150,8 +150,8 @@ export function Inventory() {
             }`}>
               <stat.icon size={20} />
             </div>
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{stat.label}</p>
-            <h4 className="text-xl font-black text-slate-800 mt-1">{stat.value}</h4>
+            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">{stat.label}</p>
+            <h4 className="text-lg sm:text-xl font-black text-slate-800 mt-1">{stat.value}</h4>
           </div>
         ))}
       </div>
@@ -179,12 +179,12 @@ export function Inventory() {
               <Filter size={16} />
               <span>{t('common.filter')}:</span>
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3">
               {/* Category Filter */}
               <select
                 value={categoryFilter}
                 onChange={(e) => setCategoryFilter(e.target.value)}
-                className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all min-w-[140px]"
+                className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all min-w-0 w-full sm:w-auto sm:min-w-[140px]"
               >
                 <option value="all">{t('pages.inventory.allCategories')}</option>
                 {uniqueCategories.map((category) => (
@@ -198,7 +198,7 @@ export function Inventory() {
               <select
                 value={stockFilter}
                 onChange={(e) => setStockFilter(e.target.value)}
-                className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all min-w-[140px]"
+                className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all min-w-0 w-full sm:w-auto sm:min-w-[140px]"
               >
                 <option value="all">{t('pages.inventory.allStockLevels')}</option>
                 <option value="inStock">{t('pages.inventory.inStock')}</option>

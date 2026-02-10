@@ -70,9 +70,9 @@ export function Settings() {
         <p className="text-slate-500 text-sm mt-1">{t('pages.settings.description')}</p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6">
         {/* Profile Section */}
-        <GlassCard className="lg:col-span-1 p-6">
+        <GlassCard className="lg:col-span-1 p-4 sm:p-6">
           <div className="flex items-center gap-3 mb-6">
             <div className="p-2 bg-emerald-100 rounded-xl">
               <User size={20} className="text-emerald-600" />
@@ -96,11 +96,11 @@ export function Settings() {
             {/* Stats */}
             <div className="w-full grid grid-cols-2 gap-4 mt-6 pt-6 border-t border-slate-100">
               <div className="text-center">
-                <p className="text-2xl font-bold text-slate-800">{user?.role === 'SUPER_ADMIN' ? t('pages.settings.superAdmin') : t('pages.settings.standardUser')}</p>
+                <p className="text-sm sm:text-2xl font-bold text-slate-800 truncate">{user?.role === 'SUPER_ADMIN' ? t('pages.settings.superAdmin') : t('pages.settings.standardUser')}</p>
                 <p className="text-xs text-slate-500">{t('pages.settings.accountType')}</p>
               </div>
               <div className="text-center">
-                <p className="text-2xl font-bold text-emerald-600">{user?.isActive ? t('common.active') : t('common.inactive')}</p>
+                <p className="text-sm sm:text-2xl font-bold text-emerald-600">{user?.isActive ? t('common.active') : t('common.inactive')}</p>
                 <p className="text-xs text-slate-500">{t('common.status')}</p>
               </div>
             </div>
@@ -108,9 +108,9 @@ export function Settings() {
         </GlassCard>
 
         {/* Settings Sections */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="lg:col-span-2 space-y-4 sm:space-y-6">
           {/* Language Preference */}
-          <GlassCard className="p-6">
+          <GlassCard className="p-4 sm:p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2 bg-blue-100 rounded-xl">
                 <Globe size={20} className="text-blue-600" />
@@ -167,7 +167,7 @@ export function Settings() {
           </GlassCard>
 
           {/* Password Change */}
-          <GlassCard className="p-6">
+          <GlassCard className="p-4 sm:p-6">
             <div className="flex items-center gap-3 mb-6">
               <div className="p-2 bg-rose-100 rounded-xl">
                 <Lock size={20} className="text-rose-600" />

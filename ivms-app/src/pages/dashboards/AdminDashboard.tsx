@@ -920,7 +920,7 @@ export function AdminDashboard() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-top-2 duration-700">
+    <div className="space-y-5 sm:space-y-8 animate-in fade-in slide-in-from-top-2 duration-700">
       {/* Page Header */}
       <div>
         <h1 className="text-2xl font-black text-slate-800 tracking-tight">{t('dashboards.admin.title')}</h1>
@@ -928,7 +928,7 @@ export function AdminDashboard() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           title={t('dashboards.admin.totalVehicles')}
           value={stats.totalVehicles.toString()}
@@ -962,7 +962,7 @@ export function AdminDashboard() {
       {/* Fleet Analytics Charts */}
       <div className="space-y-4">
         <h2 className="text-xl font-bold text-slate-800">{t('dashboards.admin.charts.fleetAnalytics')}</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           <GlassCard className="p-5">
             <h3 className="text-sm font-bold text-slate-700 mb-3">{t('dashboards.admin.charts.fleetStatus')}</h3>
             <FleetStatusChart vehicles={vehicles} />

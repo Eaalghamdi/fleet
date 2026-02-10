@@ -156,12 +156,12 @@ export function Vehicles() {
               <Filter size={16} />
               <span>{t('common.filter')}:</span>
             </div>
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-col sm:flex-row flex-wrap gap-3">
               {/* Model Filter */}
               <select
                 value={modelFilter}
                 onChange={(e) => { setModelFilter(e.target.value); setCurrentPage(1); }}
-                className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all min-w-[140px]"
+                className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all min-w-0 w-full sm:w-auto sm:min-w-[140px]"
               >
                 <option value="all">{t('pages.vehicles.allModels')}</option>
                 {uniqueModels.map((model) => (
@@ -175,7 +175,7 @@ export function Vehicles() {
               <select
                 value={statusFilter}
                 onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}
-                className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all min-w-[140px]"
+                className="px-3 py-2 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all min-w-0 w-full sm:w-auto sm:min-w-[140px]"
               >
                 <option value="all">{t('pages.vehicles.allStatuses')}</option>
                 <option value="active">{t('vehicleStatuses.active')}</option>

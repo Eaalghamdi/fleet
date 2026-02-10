@@ -50,11 +50,11 @@ export function LoginPage() {
       <div className="w-full max-w-md">
         {/* Title */}
         <div className="text-center mb-8">
-          <h1 className="text-4xl font-black text-slate-800 tracking-tight">{t('common.appDescription')}</h1>
+          <h1 className="text-2xl sm:text-4xl font-black text-slate-800 tracking-tight">{t('common.appDescription')}</h1>
         </div>
 
         {/* Login Form */}
-        <div className="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 p-8">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-xl shadow-slate-200/50 p-5 sm:p-8">
           <h2 className="text-xl font-bold text-slate-800 mb-6">{t('auth.login')}</h2>
 
           {error && (
