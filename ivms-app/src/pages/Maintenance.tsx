@@ -6,7 +6,6 @@ import {
   Calendar,
   Search,
   Pencil,
-  Trash2,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { GlassCard, ConfirmDialog, Modal, Pagination } from '../components/ui';
@@ -355,7 +354,7 @@ export function Maintenance() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-slate-400 mb-1">{t('pages.maintenance.maintenanceType')}</p>
                 <p className="text-sm font-medium text-slate-700">{t(getTypeKey(viewingMaintenance.type))}</p>
@@ -400,15 +399,9 @@ export function Maintenance() {
                   setViewingMaintenance(null);
                   setDeletingMaintenance(viewingMaintenance);
                 }}
-                className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+                className="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center"
               >
-                <Trash2 size={16} />
-              </button>
-              <button
-                onClick={() => setViewingMaintenance(null)}
-                className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
-              >
-                {t('common.close')}
+                {t('common.delete')}
               </button>
             </div>
           </div>

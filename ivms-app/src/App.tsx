@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Menu, Bell, AlertTriangle } from 'lucide-react';
+import { Menu, AlertTriangle } from 'lucide-react';
 import { Sidebar, Header } from './components/layout';
 import { Dashboard, Vehicles, Maintenance, Inventory, Reports, Unauthorized, AdminDashboard, OperationDashboard, GarageDashboard, MaintenanceDashboard, Settings, UserManagement, Drivers, Alerts } from './pages';
 import { AppProvider, useApp } from './contexts/AppContext';
@@ -108,11 +108,6 @@ function AppContent() {
                 {mobileAlertCount > 9 ? '9+' : mobileAlertCount}
               </span>
             )}
-          </button>
-          {/* Notification Bell */}
-          <button className="p-2 bg-white border border-slate-200 rounded-xl text-slate-500 relative">
-            <Bell size={16} />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 border-2 border-white rounded-full"></span>
           </button>
         </div>
       </div>

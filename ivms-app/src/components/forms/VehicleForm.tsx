@@ -169,7 +169,7 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
                   {isCompleted ? <Check className="w-4 h-4" /> : stepNum}
                 </div>
                 <span
-                  className={`text-xs mt-1.5 text-center leading-tight max-w-[80px] ${
+                  className={`hidden sm:block text-xs mt-1.5 text-center leading-tight max-w-[80px] ${
                     isActive || isCompleted
                       ? 'text-emerald-600 font-medium'
                       : 'text-slate-400'
@@ -439,7 +439,7 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
         </div>
 
         {imagePreviews.length > 0 && (
-          <div className="grid grid-cols-4 gap-3 mt-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-3">
             {imagePreviews.map((src, index) => (
               <div key={index} className="relative group rounded-xl overflow-hidden aspect-square">
                 <img

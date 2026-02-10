@@ -284,7 +284,7 @@ export function OperationDashboard() {
               <p className="text-xs text-slate-500">{t('dashboards.operation.confirmTripStart')}</p>
             </div>
             {pendingActions.length > 0 && (
-              <span className="bg-slate-400 text-white text-xs font-bold px-2 py-1 rounded-full">
+              <span className="bg-emerald-600 text-white text-xs font-bold px-2 py-1 rounded-full">
                 {pendingActions.length}
               </span>
             )}
@@ -329,7 +329,7 @@ export function OperationDashboard() {
             >
               {t('dashboards.operation.pendingActions')}
               {pendingActions.length > 0 && (
-                <span className="bg-slate-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                <span className="bg-emerald-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
                   {pendingActions.length}
                 </span>
               )}

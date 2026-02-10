@@ -602,7 +602,7 @@ export function AdminDashboard() {
             </div>
 
             {/* Requester Info */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.admin.requester')}</p>
                 <p className="text-sm font-medium text-slate-800">{req.requester}</p>
@@ -639,7 +639,7 @@ export function AdminDashboard() {
             {/* Vehicle Details */}
             <div className="border-t border-slate-100 pt-4">
               <p className="text-xs font-bold text-slate-600 mb-3">{t('dashboards.admin.vehicleDetails')}</p>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.operation.carType')}</p>
                   <p className="text-sm font-medium text-slate-800">{t(`dashboards.operation.${req.requestedCarType}`)}</p>
@@ -700,7 +700,7 @@ export function AdminDashboard() {
             </div>
 
             {/* Vehicle Info */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('vehicles.plateNumber')}</p>
                 <p className="text-sm font-medium text-slate-800">{req.vehiclePlate}</p>
@@ -714,7 +714,7 @@ export function AdminDashboard() {
             {/* Maintenance Details */}
             <div className="border-t border-slate-100 pt-4">
               <p className="text-xs font-bold text-slate-600 mb-3">{t('dashboards.admin.maintenanceDetails')}</p>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('pages.maintenance.maintenanceType')}</p>
                   <p className="text-sm font-medium text-slate-800">{t(`maintenanceTypes.${req.maintenanceType}`)}</p>
@@ -773,7 +773,7 @@ export function AdminDashboard() {
             </div>
 
             {/* Part Details */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.admin.partName')}</p>
                 <p className="text-sm font-medium text-slate-800">{req.partName}</p>
@@ -795,7 +795,7 @@ export function AdminDashboard() {
             {/* Vendor & Stock Info */}
             <div className="border-t border-slate-100 pt-4">
               <p className="text-xs font-bold text-slate-600 mb-3">{t('dashboards.admin.vendorAndStock')}</p>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {req.vendor && (
                   <div>
                     <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.admin.vendor')}</p>
@@ -994,7 +994,7 @@ export function AdminDashboard() {
         <GlassCard>
           {/* Tab Navigation */}
           <div className="border-b border-slate-100">
-            <div className="flex">
+            <div className="flex overflow-x-auto">
               {tabs.map((tab) => {
                 const count = mockPendingApprovals[tab.key].length;
                 const isActive = activeTab === tab.key;
@@ -1006,7 +1006,7 @@ export function AdminDashboard() {
                       setActiveTab(tab.key);
                       setSelectedItems(new Set());
                     }}
-                    className={`px-6 py-3 text-sm font-medium transition-colors flex items-center gap-2 ${
+                    className={`px-3 sm:px-6 py-3 text-sm font-medium transition-colors flex items-center gap-2 whitespace-nowrap shrink-0 ${
                       isActive
                         ? 'text-emerald-600 border-b-2 border-emerald-600'
                         : 'text-slate-500 hover:text-slate-700'
@@ -1014,7 +1014,7 @@ export function AdminDashboard() {
                   >
                     {getTabLabel(tab.key)}
                     {count > 0 && (
-                      <span className="bg-slate-400 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
+                      <span className="bg-emerald-600 text-white text-xs font-bold px-1.5 py-0.5 rounded-full">
                         {count}
                       </span>
                     )}
@@ -1049,8 +1049,8 @@ export function AdminDashboard() {
             </div>
           )}
 
-          {/* Table */}
-          <div className="overflow-x-auto">
+          {/* Desktop Table */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 {renderTableHeader()}
@@ -1068,6 +1068,75 @@ export function AdminDashboard() {
               </tbody>
             </table>
           </div>
+
+          {/* Mobile Cards */}
+          <div className="md:hidden divide-y divide-slate-100">
+            {currentRequests.length > 0 ? (
+              currentRequests.map((request) => {
+                const isSelected = selectedItems.has(request.id);
+                return (
+                  <div
+                    key={request.id}
+                    onClick={() => handleRowClick(request)}
+                    className={`p-4 hover:bg-slate-50/50 transition-colors cursor-pointer ${isSelected ? 'bg-blue-50/50' : ''}`}
+                  >
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center gap-3">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) => { e.stopPropagation(); handleCheckboxChange(request.id); }}
+                          className="w-4 h-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                        />
+                        <div>
+                          <p className="text-sm font-bold text-slate-800">{request.id}</p>
+                          {activeTab === 'carRequests' && <p className="text-xs text-slate-500">{(request as CarRequest).requester}</p>}
+                          {activeTab === 'maintenance' && <p className="text-xs text-slate-500">{(request as MaintenanceRequest).vehicle}</p>}
+                          {activeTab === 'inventory' && <p className="text-xs text-slate-500">{(request as InventoryRequest).item}</p>}
+                          {activeTab === 'carInventory' && <p className="text-xs text-slate-500">{(request as AddVehicleRequest).brand} - {(request as AddVehicleRequest).plate}</p>}
+                        </div>
+                      </div>
+                      {activeTab === 'carRequests' && (
+                        <span className={`text-xs font-medium ${(request as CarRequest).priority === 'high' ? 'text-rose-600' : 'text-amber-600'}`}>
+                          {t(`priorities.${(request as CarRequest).priority}`)}
+                        </span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2 text-xs ms-7">
+                      {activeTab === 'carRequests' && (
+                        <>
+                          <div><span className="text-slate-400">{t('dashboards.admin.department')}:</span> <span className="text-slate-600">{(request as CarRequest).department}</span></div>
+                          <div><span className="text-slate-400">{t('common.date')}:</span> <span className="text-slate-600">{(request as CarRequest).date}</span></div>
+                        </>
+                      )}
+                      {activeTab === 'maintenance' && (
+                        <>
+                          <div><span className="text-slate-400">{t('maintenance.cost')}:</span> <span className="text-slate-600">{(request as MaintenanceRequest).cost}</span></div>
+                          <div><span className="text-slate-400">{t('common.date')}:</span> <span className="text-slate-600">{(request as MaintenanceRequest).date}</span></div>
+                        </>
+                      )}
+                      {activeTab === 'inventory' && (
+                        <>
+                          <div><span className="text-slate-400">{t('requests.requestedBy')}:</span> <span className="text-slate-600">{(request as InventoryRequest).requestedBy}</span></div>
+                          <div><span className="text-slate-400">{t('maintenance.cost')}:</span> <span className="text-slate-600">{(request as InventoryRequest).cost}</span></div>
+                        </>
+                      )}
+                      {activeTab === 'carInventory' && (
+                        <>
+                          <div><span className="text-slate-400">{t('requests.requestedBy')}:</span> <span className="text-slate-600">{(request as AddVehicleRequest).requestedBy}</span></div>
+                          <div><span className="text-slate-400">{t('common.date')}:</span> <span className="text-slate-600">{(request as AddVehicleRequest).date}</span></div>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="py-8 text-center text-slate-400">
+                {t('dashboards.admin.noPendingRequests')}
+              </div>
+            )}
+          </div>
         </GlassCard>
       </div>
 
@@ -1080,41 +1149,74 @@ export function AdminDashboard() {
 
         <GlassCard className="p-6">
           {mockApprovedRequests.length > 0 ? (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead>
-                <tr className="text-xs text-slate-500 border-b border-slate-200">
-                  <th className="py-3 px-4 text-start font-semibold">{t('dashboards.admin.requestId')}</th>
-                  <th className="py-3 px-4 text-start font-semibold">{t('dashboards.admin.requestType')}</th>
-                  <th className="py-3 px-4 text-start font-semibold">{t('common.description')}</th>
-                  <th className="py-3 px-4 text-start font-semibold">{t('dashboards.admin.requester')}</th>
-                  <th className="py-3 px-4 text-start font-semibold">{t('dashboards.admin.approvedAt')}</th>
-                  <th className="py-3 px-4 text-start font-semibold">{t('dashboards.admin.approvedBy')}</th>
-                </tr>
-              </thead>
-              <tbody className="text-sm">
-                {mockApprovedRequests.map((request) => {
-                  const typeLabels: Record<ApprovedRequestType, string> = {
-                    carRequest: t('dashboards.admin.carRequests'),
-                    maintenance: t('dashboards.admin.maintenanceRequests'),
-                    inventory: t('dashboards.admin.purchaseRequests'),
-                    addVehicle: t('dashboards.admin.addVehicleRequests'),
-                  };
+          <>
+            {/* Desktop Table */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="text-xs text-slate-500 border-b border-slate-200">
+                    <th className="py-3 px-4 text-start font-semibold">{t('dashboards.admin.requestId')}</th>
+                    <th className="py-3 px-4 text-start font-semibold">{t('dashboards.admin.requestType')}</th>
+                    <th className="py-3 px-4 text-start font-semibold">{t('common.description')}</th>
+                    <th className="py-3 px-4 text-start font-semibold">{t('dashboards.admin.requester')}</th>
+                    <th className="py-3 px-4 text-start font-semibold">{t('dashboards.admin.approvedAt')}</th>
+                    <th className="py-3 px-4 text-start font-semibold">{t('dashboards.admin.approvedBy')}</th>
+                  </tr>
+                </thead>
+                <tbody className="text-sm">
+                  {mockApprovedRequests.map((request) => {
+                    const typeLabels: Record<ApprovedRequestType, string> = {
+                      carRequest: t('dashboards.admin.carRequests'),
+                      maintenance: t('dashboards.admin.maintenanceRequests'),
+                      inventory: t('dashboards.admin.purchaseRequests'),
+                      addVehicle: t('dashboards.admin.addVehicleRequests'),
+                    };
 
-                  return (
-                    <tr key={request.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
-                      <td className="py-3 px-4 font-medium text-slate-800">{request.id}</td>
-                      <td className="py-3 px-4 text-sm text-slate-600">{typeLabels[request.type]}</td>
-                      <td className="py-3 px-4 text-slate-600">{request.description}</td>
-                      <td className="py-3 px-4 text-slate-600">{request.requester}</td>
-                      <td className="py-3 px-4 text-slate-600">{request.approvedAt}</td>
-                      <td className="py-3 px-4 text-slate-600">{request.approvedBy}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+                    return (
+                      <tr key={request.id} className="border-b border-slate-100 hover:bg-slate-50 transition-colors">
+                        <td className="py-3 px-4 font-medium text-slate-800">{request.id}</td>
+                        <td className="py-3 px-4 text-sm text-slate-600">{typeLabels[request.type]}</td>
+                        <td className="py-3 px-4 text-slate-600">{request.description}</td>
+                        <td className="py-3 px-4 text-slate-600">{request.requester}</td>
+                        <td className="py-3 px-4 text-slate-600">{request.approvedAt}</td>
+                        <td className="py-3 px-4 text-slate-600">{request.approvedBy}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden divide-y divide-slate-100">
+              {mockApprovedRequests.map((request) => {
+                const typeLabels: Record<ApprovedRequestType, string> = {
+                  carRequest: t('dashboards.admin.carRequests'),
+                  maintenance: t('dashboards.admin.maintenanceRequests'),
+                  inventory: t('dashboards.admin.purchaseRequests'),
+                  addVehicle: t('dashboards.admin.addVehicleRequests'),
+                };
+
+                return (
+                  <div key={request.id} className="py-3 hover:bg-slate-50/50 transition-colors">
+                    <div className="flex items-start justify-between mb-2">
+                      <div>
+                        <p className="text-sm font-bold text-slate-800">{request.id}</p>
+                        <p className="text-xs text-slate-500">{typeLabels[request.type]}</p>
+                      </div>
+                      <span className="text-xs text-slate-500">{request.approvedAt}</span>
+                    </div>
+                    <p className="text-xs text-slate-600 mb-1">{request.description}</p>
+                    <div className="flex items-center gap-3 text-xs text-slate-400">
+                      <span>{request.requester}</span>
+                      <span>•</span>
+                      <span>{t('dashboards.admin.approvedBy')}: {request.approvedBy}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </>
         ) : (
           <div className="text-center py-8 text-slate-400">
             {t('dashboards.admin.noApprovedRequests')}

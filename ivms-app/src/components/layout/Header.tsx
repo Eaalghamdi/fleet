@@ -1,7 +1,6 @@
-import { useState, useMemo } from 'react';
-import { Bell, AlertTriangle } from 'lucide-react';
+import { useMemo } from 'react';
+import { AlertTriangle } from 'lucide-react';
 import { useApp } from '../../contexts/AppContext';
-import { NotificationsPanel } from './NotificationsPanel';
 import { getVehicleExpiryAlerts, getDriverExpiryAlerts, countByStatus } from '../../utils/expiryUtils';
 
 interface HeaderProps {
@@ -9,10 +8,7 @@ interface HeaderProps {
 }
 
 export function Header({ onNavigateToAlerts }: HeaderProps) {
-  const { notifications, vehicles, drivers } = useApp();
-  const [isNotificationsPanelOpen, setIsNotificationsPanelOpen] = useState(false);
-
-  const unreadNotifications = notifications.filter(n => !n.read).length;
+  const { vehicles, drivers } = useApp();
 
   const alertCount = useMemo(() => {
     const vehicleAlerts = getVehicleExpiryAlerts(vehicles);
@@ -39,26 +35,6 @@ export function Header({ onNavigateToAlerts }: HeaderProps) {
           )}
         </button>
 
-        {/* Notification Bell */}
-        <div className="relative">
-          <button
-            onClick={() => setIsNotificationsPanelOpen(!isNotificationsPanelOpen)}
-            className="p-3 bg-white border border-slate-200 rounded-2xl text-slate-500 hover:text-emerald-600 hover:border-emerald-100 transition-all relative"
-          >
-            <Bell size={18} />
-            {unreadNotifications > 0 && (
-              <span className="absolute top-2 right-2 min-w-[18px] h-[18px] bg-rose-500 border-2 border-white rounded-full text-[10px] font-bold text-white flex items-center justify-center">
-                {unreadNotifications > 9 ? '9+' : unreadNotifications}
-              </span>
-            )}
-          </button>
-
-          {/* Notifications Panel */}
-          <NotificationsPanel
-            isOpen={isNotificationsPanelOpen}
-            onClose={() => setIsNotificationsPanelOpen(false)}
-          />
-        </div>
       </div>
     </header>
   );

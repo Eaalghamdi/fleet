@@ -221,7 +221,7 @@ ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}
         <GlassCard className="p-6">
           <h3 className="font-bold text-slate-800 mb-6">{t('pages.dashboard.fleetStatusDistribution')}</h3>
           <div className="flex flex-col items-center">
-            <div className="relative w-36 h-36 mb-6">
+            <div className="relative w-28 h-28 sm:w-36 sm:h-36 mb-6">
               <svg viewBox="0 0 36 36" className="w-full h-full transform -rotate-90">
                 <circle cx="18" cy="18" r="15.9" fill="transparent" stroke="#f1f5f9" strokeWidth="3"></circle>
                 <circle
