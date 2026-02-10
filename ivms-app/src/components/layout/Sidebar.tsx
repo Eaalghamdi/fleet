@@ -91,7 +91,7 @@ export function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen, isMobileOp
   return (
     <aside
       className={`${
-        isOpen ? 'w-72' : 'w-20'
+        isOpen ? 'w-[85vw] max-w-72' : 'w-20'
       } bg-slate-900 text-slate-400 rtl:border-l ltr:border-r border-white/5 transition-all duration-500 flex flex-col fixed inset-y-0 rtl:right-0 ltr:left-0 z-50
       ${isMobileOpen ? 'translate-x-0' : isRTL ? 'translate-x-full' : '-translate-x-full'} lg:translate-x-0`}
     >

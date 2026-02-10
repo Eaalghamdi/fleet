@@ -19,7 +19,7 @@ export function Header({ onNavigateToAlerts }: HeaderProps) {
   }, [vehicles, drivers]);
 
   return (
-    <header className="mb-6 lg:mb-10 flex items-center justify-end px-4 lg:px-10 pt-4 lg:pt-10">
+    <header className="mb-4 lg:mb-10 flex items-center justify-end px-4 lg:px-10 pt-2 lg:pt-10">
       {/* Actions - Hidden on mobile (already in top nav) */}
       <div className="hidden lg:flex gap-3 items-center">
         {/* Alert Icon */}

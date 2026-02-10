@@ -1026,21 +1026,21 @@ export function AdminDashboard() {
 
           {/* Bulk Actions */}
           {selectedItems.size > 0 && (
-            <div className="flex items-center gap-3 mx-6 mt-4 p-3 bg-blue-50 rounded-xl">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mx-4 sm:mx-6 mt-4 p-3 bg-blue-50 rounded-xl">
               <span className="text-sm text-blue-700 font-medium">
                 {t('dashboards.admin.selectedCount', { count: selectedItems.size })}
               </span>
-              <div className="flex gap-2 ms-auto">
+              <div className="flex gap-2 sm:ms-auto w-full sm:w-auto">
                 <button
                   onClick={handleBulkApprove}
-                  className="px-4 py-2 bg-emerald-600 text-white rounded-lg text-sm font-bold hover:bg-emerald-700 transition-colors flex items-center gap-2"
+                  className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs sm:text-sm font-bold hover:bg-emerald-700 transition-colors flex items-center justify-center gap-1 sm:gap-2"
                 >
                   <Check size={16} />
                   {t('dashboards.admin.approveSelected')}
                 </button>
                 <button
                   onClick={handleBulkReject}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg text-sm font-bold hover:bg-red-700 transition-colors flex items-center gap-2"
+                  className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-red-600 text-white rounded-lg text-xs sm:text-sm font-bold hover:bg-red-700 transition-colors flex items-center justify-center gap-1 sm:gap-2"
                 >
                   <XCircle size={16} />
                   {t('dashboards.admin.rejectSelected')}

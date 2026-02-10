@@ -513,7 +513,7 @@ export function Drivers() {
       {isAddModalOpen && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-xl">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+            <div className="p-4 sm:p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
               <h2 className="text-xl font-bold text-slate-800">{t('pages.drivers.registerNewDriver')}</h2>
               <button
                 onClick={() => setIsAddModalOpen(false)}
@@ -534,7 +534,7 @@ export function Drivers() {
       {editingDriver && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-xl">
-            <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+            <div className="p-4 sm:p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
               <h2 className="text-xl font-bold text-slate-800">{t('pages.drivers.editDriver')}</h2>
               <button
                 onClick={() => setEditingDriver(null)}

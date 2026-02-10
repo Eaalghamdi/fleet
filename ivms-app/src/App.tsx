@@ -134,7 +134,7 @@ function AppContent() {
       />
 
       {/* Main Content */}
-      <main className={`flex-1 transition-all duration-500 pt-16 lg:pt-0 ${isSidebarOpen ? 'lg:rtl:mr-72 lg:ltr:ml-72' : 'lg:rtl:mr-20 lg:ltr:ml-20'}`}>
+      <main className={`flex-1 transition-all duration-500 pt-14 lg:pt-0 ${isSidebarOpen ? 'lg:rtl:mr-72 lg:ltr:ml-72' : 'lg:rtl:mr-20 lg:ltr:ml-20'}`}>
         {/* Header / Command Bar */}
         <Header onNavigateToAlerts={() => handleTabChange('alerts')} />
 

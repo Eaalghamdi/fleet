@@ -423,7 +423,7 @@ export function Alerts() {
 
       {/* Inbox layout */}
       <GlassCard className="overflow-hidden">
-        <div className="flex h-[calc(100vh-380px)] min-h-[500px]">
+        <div className="flex h-[calc(100vh-440px)] lg:h-[calc(100vh-380px)] min-h-[400px] lg:min-h-[500px]">
           {/* Alert list panel (left) */}
           <div
             className={`w-full lg:w-2/5 border-e border-slate-100 flex flex-col ${

@@ -60,8 +60,8 @@ export function DriverDetailModal({ driver, onClose, onEdit, onDelete }: DriverD
     <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-hidden shadow-xl">
         {/* Header */}
-        <div className="p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-          <h2 className="text-xl font-bold text-slate-800">{t('pages.drivers.driverDetails')}</h2>
+        <div className="p-4 sm:p-6 border-b border-slate-100 flex items-center justify-between bg-slate-50">
+          <h2 className="text-lg sm:text-xl font-bold text-slate-800">{t('pages.drivers.driverDetails')}</h2>
           <button
             onClick={onClose}
             className="p-2 hover:bg-slate-200 rounded-full transition-colors"
@@ -70,7 +70,7 @@ export function DriverDetailModal({ driver, onClose, onEdit, onDelete }: DriverD
           </button>
         </div>
 
-        <div className="p-6 space-y-6 overflow-y-auto max-h-[calc(90vh-160px)]">
+        <div className="p-4 sm:p-6 space-y-5 sm:space-y-6 overflow-y-auto max-h-[calc(90vh-140px)]">
           {/* Driver Info */}
           <div className="flex items-center gap-4 pb-4 border-b border-slate-100">
             <div className="w-16 h-16 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
@@ -205,8 +205,8 @@ export function DriverDetailModal({ driver, onClose, onEdit, onDelete }: DriverD
 
             {/* Add Permit Form */}
             {showPermitForm && (
-              <form onSubmit={handleAddPermit} className="p-4 bg-emerald-50 rounded-xl mb-3 space-y-3">
-                <div className="grid grid-cols-2 gap-3">
+              <form onSubmit={handleAddPermit} className="p-3 sm:p-4 bg-emerald-50 rounded-xl mb-3 space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <select
                     value={permitData.type}
                     onChange={e => setPermitData(prev => ({ ...prev, type: e.target.value }))}
@@ -295,7 +295,7 @@ export function DriverDetailModal({ driver, onClose, onEdit, onDelete }: DriverD
         </div>
 
         {/* Action Buttons */}
-        <div className="p-6 border-t border-slate-100 flex gap-3">
+        <div className="p-4 sm:p-6 border-t border-slate-100 flex gap-3">
           <button
             onClick={() => { onClose(); onEdit(driver); }}
             className="flex-1 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
