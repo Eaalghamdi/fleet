@@ -1,8 +1,8 @@
 import { createContext, useContext, useState, useEffect, useCallback, type ReactNode } from 'react';
 import { authApi, type User, type Department, type Role, Department as Dept, Role as UserRole } from '../api';
 
-// Development mode - set to true to bypass backend authentication
-const DEV_MODE = import.meta.env.VITE_DEV_AUTH === 'true';
+// Demo mode - all data is local, no backend required
+const DEV_MODE = true;
 
 // Mock users for development
 const MOCK_USERS: Record<string, User> = {
