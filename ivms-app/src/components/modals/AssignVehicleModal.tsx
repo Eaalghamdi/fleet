@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Car, Building2, MapPin, Calendar, User, CheckCircle, X } from 'lucide-react';
+import { Car, Building2, MapPin, Calendar, User, CheckCircle } from 'lucide-react';
 import { Modal } from '../ui/Modal';
 import type { Vehicle } from '../../types';
 

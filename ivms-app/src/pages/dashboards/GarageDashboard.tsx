@@ -15,8 +15,6 @@ import { useTranslation } from 'react-i18next';
 import { StatCard, GlassCard } from '../../components/ui';
 import { useApp } from '../../contexts/AppContext';
 import { AssignVehicleModal } from '../../components/modals/AssignVehicleModal';
-import { getVehicleExpiryAlerts } from '../../utils/expiryUtils';
-import { ExpiryAlertsSection } from '../../components/dashboard/ExpiryAlertsSection';
 
 // Mock data for pending assignments (Car Request data model)
 const mockPendingAssignments = [
@@ -68,11 +66,6 @@ export function GarageDashboard() {
   const [isAssignModalOpen, setIsAssignModalOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<typeof mockPendingAssignments[0] | null>(null);
 
-  const vehicleDocAlerts = useMemo(() => {
-    const allAlerts = getVehicleExpiryAlerts(vehicles);
-    return allAlerts.filter(a => ['insuranceExpiry', 'registrationExpiry', 'warrantyExpiry'].includes(a.field));
-  }, [vehicles]);
-
   const stats = useMemo(() => {
     const totalCars = vehicles.length;
     const availableCars = vehicles.filter(v => v.status === 'active').length;
@@ -87,11 +80,11 @@ export function GarageDashboard() {
     setIsAssignModalOpen(true);
   };
 
-  const handleAssignFleetVehicle = (requestId: string, vehicleId: string, vehiclePlate: string) => {
+  const handleAssignFleetVehicle = (requestId: string, _vehicleId: string, vehiclePlate: string) => {
     showToast(t('dashboards.garage.vehicleAssigned', { plate: vehiclePlate, id: requestId }), 'success');
   };
 
-  const handleAssignRentalCar = (requestId: string, rentalCompanyId: string, rentalCompanyName: string) => {
+  const handleAssignRentalCar = (requestId: string, _rentalCompanyId: string, rentalCompanyName: string) => {
     showToast(t('dashboards.garage.rentalCarAssigned', { company: rentalCompanyName, id: requestId }), 'success');
   };
 
@@ -140,9 +133,6 @@ export function GarageDashboard() {
           trendType={stats.lowStockParts > 0 ? 'danger' : 'success'}
         />
       </div>
-
-      {/* Expiry Alerts */}
-      <ExpiryAlertsSection alerts={vehicleDocAlerts} maxVisible={6} />
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

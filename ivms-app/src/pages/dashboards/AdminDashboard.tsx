@@ -1,8 +1,6 @@
 import { useMemo, useState } from 'react';
 import {
   Car,
-  Wrench,
-  Package,
   CheckCircle,
   XCircle,
   Clock,
@@ -11,22 +9,12 @@ import {
   TrendingUp,
   Check,
   History,
-  MapPin,
-  Calendar,
-  User,
-  Building2,
-  DollarSign,
-  Gauge,
-  Palette,
-  Hash,
-  Tag,
-  AlertTriangle,
+  Wrench,
+  Package,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { StatCard, GlassCard, Modal } from '../../components/ui';
 import { useApp } from '../../contexts/AppContext';
-import { getVehicleExpiryAlerts, getDriverExpiryAlerts } from '../../utils/expiryUtils';
-import { ExpiryAlertsSection } from '../../components/dashboard/ExpiryAlertsSection';
 import {
   FleetStatusChart,
   MaintenanceTypeChart,
@@ -322,13 +310,7 @@ const tabs: { key: TabType; icon: typeof Car; color: string; bgColor: string }[]
 
 export function AdminDashboard() {
   const { t } = useTranslation();
-  const { vehicles, drivers, maintenance, inventory, showToast } = useApp();
-
-  const expiryAlerts = useMemo(() => {
-    const vehicleAlerts = getVehicleExpiryAlerts(vehicles);
-    const driverAlerts = getDriverExpiryAlerts(drivers);
-    return [...vehicleAlerts, ...driverAlerts].sort((a, b) => a.daysRemaining - b.daysRemaining);
-  }, [vehicles, drivers]);
+  const { vehicles, maintenance, inventory, showToast } = useApp();
 
   const [activeTab, setActiveTab] = useState<TabType>('carRequests');
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -609,114 +591,68 @@ export function AdminDashboard() {
       case 'carRequests': {
         const req = selectedRequest as CarRequest;
         return (
-          <div className="space-y-6">
-            {/* Status & Priority Header */}
+          <div className="space-y-5">
+            {/* Header */}
             <div className="bg-slate-50 rounded-xl p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-100 rounded-lg">
-                  <Car size={20} className="text-blue-600" />
-                </div>
-                <div>
-                  <p className="font-semibold text-slate-800">{req.id}</p>
-                  <p className="text-sm text-slate-500">{t('dashboards.admin.carRequests')}</p>
-                </div>
+              <div>
+                <p className="font-semibold text-slate-800">{req.id}</p>
+                <p className="text-sm text-slate-500">{t('dashboards.admin.carRequests')}</p>
               </div>
-              <span className={`text-sm font-medium ${req.priority === 'high' ? 'text-rose-600' : 'text-amber-600'}`}>{t(`priorities.${req.priority}`)}</span>
+              <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${req.priority === 'high' ? 'bg-rose-100 text-rose-700' : 'bg-amber-100 text-amber-700'}`}>{t(`priorities.${req.priority}`)}</span>
             </div>
 
             {/* Requester Info */}
             <div className="grid grid-cols-2 gap-4">
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <User size={18} className="text-purple-600" />
-                </div>
-                <div>
-                  <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.admin.requester')}</p>
-                  <p className="text-sm font-medium text-slate-800">{req.requester}</p>
-                </div>
+              <div>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.admin.requester')}</p>
+                <p className="text-sm font-medium text-slate-800">{req.requester}</p>
               </div>
-              <div className="flex items-start gap-3">
-                <div className="p-2 bg-slate-100 rounded-lg">
-                  <Building2 size={18} className="text-slate-600" />
-                </div>
-                <div>
-                  <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.admin.department')}</p>
-                  <p className="text-sm font-medium text-slate-800">{req.department}</p>
-                </div>
+              <div>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.admin.department')}</p>
+                <p className="text-sm font-medium text-slate-800">{req.department}</p>
               </div>
             </div>
 
             {/* Trip Details */}
             <div className="border-t border-slate-100 pt-4">
-              <h4 className="text-sm font-semibold text-slate-700 mb-3">{t('dashboards.admin.tripDetails')}</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-emerald-100 rounded-lg">
-                    <MapPin size={18} className="text-emerald-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.operation.departureLocation')}</p>
-                    <p className="text-sm font-medium text-slate-800">{req.departureLocation}</p>
-                  </div>
+              <p className="text-xs font-bold text-slate-600 mb-3">{t('dashboards.admin.tripDetails')}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.operation.departureLocation')}</p>
+                  <p className="text-sm font-medium text-slate-800">{req.departureLocation}</p>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-red-100 rounded-lg">
-                    <MapPin size={18} className="text-red-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.operation.destination')}</p>
-                    <p className="text-sm font-medium text-slate-800">{req.destination}</p>
-                  </div>
+                <div>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.operation.destination')}</p>
+                  <p className="text-sm font-medium text-slate-800">{req.destination}</p>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Calendar size={18} className="text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.operation.departureDatetime')}</p>
-                    <p className="text-sm font-medium text-slate-800">{formatDateTime(req.departureDatetime)}</p>
-                  </div>
+                <div>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.operation.departureDatetime')}</p>
+                  <p className="text-sm font-medium text-slate-800">{formatDateTime(req.departureDatetime)}</p>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <Calendar size={18} className="text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.operation.returnDatetime')}</p>
-                    <p className="text-sm font-medium text-slate-800">{formatDateTime(req.returnDatetime)}</p>
-                  </div>
+                <div>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.operation.returnDatetime')}</p>
+                  <p className="text-sm font-medium text-slate-800">{formatDateTime(req.returnDatetime)}</p>
                 </div>
               </div>
             </div>
 
             {/* Vehicle Details */}
             <div className="border-t border-slate-100 pt-4">
-              <h4 className="text-sm font-semibold text-slate-700 mb-3">{t('dashboards.admin.vehicleDetails')}</h4>
+              <p className="text-xs font-bold text-slate-600 mb-3">{t('dashboards.admin.vehicleDetails')}</p>
               <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-amber-100 rounded-lg">
-                    <Car size={18} className="text-amber-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.operation.carType')}</p>
-                    <p className="text-sm font-medium text-slate-800">{t(`dashboards.operation.${req.requestedCarType}`)}</p>
-                  </div>
+                <div>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.operation.carType')}</p>
+                  <p className="text-sm font-medium text-slate-800">{t(`dashboards.operation.${req.requestedCarType}`)}</p>
                 </div>
                 {req.assignedCarPlate && (
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-slate-100 rounded-lg">
-                      <Hash size={18} className="text-slate-600" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.admin.assignedVehicle')}</p>
-                      <p className="text-sm font-medium text-slate-800">{req.assignedCarPlate}</p>
-                    </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.admin.assignedVehicle')}</p>
+                    <p className="text-sm font-medium text-slate-800">{req.assignedCarPlate}</p>
                   </div>
                 )}
               </div>
               {req.isRental && req.rentalCompanyName && (
-                <div className="mt-3 p-3 bg-amber-50 border border-amber-100 rounded-lg flex items-center gap-2">
-                  <Building2 size={16} className="text-amber-600" />
+                <div className="mt-3 p-3 bg-amber-50 border border-amber-100 rounded-lg">
                   <span className="text-sm text-amber-700">
                     {t('dashboards.operation.isRental')}: {req.rentalCompanyName}
                   </span>
@@ -727,25 +663,20 @@ export function AdminDashboard() {
             {/* Description */}
             {req.description && (
               <div className="border-t border-slate-100 pt-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <FileText size={16} className="text-slate-400" />
-                  <p className="text-xs text-slate-400 uppercase tracking-wide">{t('common.description')}</p>
-                </div>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-2">{t('common.description')}</p>
                 <p className="text-sm text-slate-700 bg-slate-50 p-3 rounded-lg">{req.description}</p>
               </div>
             )}
 
             {/* Audit Info */}
             <div className="border-t border-slate-100 pt-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <User size={14} className="text-slate-400" />
-                  <span className="text-slate-500">{t('dashboards.operation.createdBy')}:</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                <div>
+                  <span className="text-slate-500">{t('dashboards.operation.createdBy')}:</span>{' '}
                   <span className="font-medium text-slate-700">{req.createdBy}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock size={14} className="text-slate-400" />
-                  <span className="text-slate-500">{t('dashboards.operation.createdAt')}:</span>
+                <div>
+                  <span className="text-slate-500">{t('dashboards.operation.createdAt')}:</span>{' '}
                   <span className="font-medium text-slate-700">{formatDateTime(req.createdAt)}</span>
                 </div>
               </div>
@@ -756,118 +687,71 @@ export function AdminDashboard() {
       case 'maintenance': {
         const req = selectedRequest as MaintenanceRequest;
         return (
-          <div className="space-y-6">
-            {/* Status & Priority Header */}
+          <div className="space-y-5">
+            {/* Header */}
             <div className="bg-slate-50 rounded-xl p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-amber-100 rounded-lg">
-                  <Wrench size={20} className="text-amber-600" />
-                </div>
-                <div>
-                  <p className="font-semibold text-slate-800">{req.id}</p>
-                  <p className="text-sm text-slate-500">{t('dashboards.admin.maintenanceRequests')}</p>
-                </div>
+              <div>
+                <p className="font-semibold text-slate-800">{req.id}</p>
+                <p className="text-sm text-slate-500">{t('dashboards.admin.maintenanceRequests')}</p>
               </div>
-              <span className={`text-sm font-medium ${req.priority === 'high' ? 'text-rose-600' : req.priority === 'medium' ? 'text-amber-600' : 'text-slate-600'}`}>
+              <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${req.priority === 'high' ? 'bg-rose-100 text-rose-700' : req.priority === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'}`}>
                 {t(`priorities.${req.priority}`)}
               </span>
             </div>
 
             {/* Vehicle Info */}
-            <div className="border-t border-slate-100 pt-4">
-              <h4 className="text-sm font-semibold text-slate-700 mb-3">{t('dashboards.admin.vehicleInfo')}</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Hash size={18} className="text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">{t('vehicles.plateNumber')}</p>
-                    <p className="text-sm font-medium text-slate-800">{req.vehiclePlate}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-slate-100 rounded-lg">
-                    <Car size={18} className="text-slate-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">{t('vehicles.vehicle')}</p>
-                    <p className="text-sm font-medium text-slate-800">{req.vehicleBrand} {req.vehicleModel}</p>
-                  </div>
-                </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('vehicles.plateNumber')}</p>
+                <p className="text-sm font-medium text-slate-800">{req.vehiclePlate}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('vehicles.vehicle')}</p>
+                <p className="text-sm font-medium text-slate-800">{req.vehicleBrand} {req.vehicleModel}</p>
               </div>
             </div>
 
             {/* Maintenance Details */}
             <div className="border-t border-slate-100 pt-4">
-              <h4 className="text-sm font-semibold text-slate-700 mb-3">{t('dashboards.admin.maintenanceDetails')}</h4>
+              <p className="text-xs font-bold text-slate-600 mb-3">{t('dashboards.admin.maintenanceDetails')}</p>
               <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <Tag size={18} className="text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">{t('pages.maintenance.maintenanceType')}</p>
-                    <p className="text-sm font-medium text-slate-800">{t(`maintenanceTypes.${req.maintenanceType}`)}</p>
-                  </div>
+                <div>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('pages.maintenance.maintenanceType')}</p>
+                  <p className="text-sm font-medium text-slate-800">{t(`maintenanceTypes.${req.maintenanceType}`)}</p>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-emerald-100 rounded-lg">
-                    <DollarSign size={18} className="text-emerald-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">{t('maintenance.cost')}</p>
-                    <p className="text-sm font-medium text-slate-800">{req.cost}</p>
-                  </div>
+                <div>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('maintenance.cost')}</p>
+                  <p className="text-sm font-medium text-slate-800">{req.cost}</p>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Clock size={18} className="text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.admin.estimatedDuration')}</p>
-                    <p className="text-sm font-medium text-slate-800">{req.estimatedDuration}</p>
-                  </div>
+                <div>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.admin.estimatedDuration')}</p>
+                  <p className="text-sm font-medium text-slate-800">{req.estimatedDuration}</p>
                 </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-amber-100 rounded-lg">
-                    <User size={18} className="text-amber-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">{t('requests.requestedBy')}</p>
-                    <p className="text-sm font-medium text-slate-800">{req.requestedBy}</p>
-                  </div>
+                <div>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('requests.requestedBy')}</p>
+                  <p className="text-sm font-medium text-slate-800">{req.requestedBy}</p>
                 </div>
               </div>
             </div>
 
             {/* Description */}
             <div className="border-t border-slate-100 pt-4">
-              <div className="flex items-center gap-2 mb-2">
-                <FileText size={16} className="text-slate-400" />
-                <p className="text-xs text-slate-400 uppercase tracking-wide">{t('common.description')}</p>
-              </div>
+              <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-2">{t('common.description')}</p>
               <p className="text-sm text-slate-700 bg-slate-50 p-3 rounded-lg">{req.description}</p>
             </div>
 
             {/* Notes */}
             {req.notes && (
               <div className="bg-amber-50 border border-amber-100 rounded-xl p-4">
-                <div className="flex items-center gap-2 mb-2">
-                  <AlertTriangle size={16} className="text-amber-600" />
-                  <p className="text-xs text-amber-600 uppercase tracking-wide font-semibold">{t('dashboards.admin.additionalNotes')}</p>
-                </div>
+                <p className="text-xs text-amber-600 uppercase tracking-wide font-semibold mb-2">{t('dashboards.admin.additionalNotes')}</p>
                 <p className="text-sm text-amber-700">{req.notes}</p>
               </div>
             )}
 
             {/* Audit Info */}
-            <div className="border-t border-slate-100 pt-4">
-              <div className="flex items-center gap-2 text-sm">
-                <Clock size={14} className="text-slate-400" />
-                <span className="text-slate-500">{t('dashboards.operation.createdAt')}:</span>
-                <span className="font-medium text-slate-700">{formatDateTime(req.createdAt)}</span>
-              </div>
+            <div className="border-t border-slate-100 pt-4 text-sm">
+              <span className="text-slate-500">{t('dashboards.operation.createdAt')}:</span>{' '}
+              <span className="font-medium text-slate-700">{formatDateTime(req.createdAt)}</span>
             </div>
           </div>
         );
@@ -876,89 +760,51 @@ export function AdminDashboard() {
         const req = selectedRequest as InventoryRequest;
         const stockStatus = req.currentStock <= req.minStock ? 'danger' : 'success';
         return (
-          <div className="space-y-6">
-            {/* Status & Urgency Header */}
+          <div className="space-y-5">
+            {/* Header */}
             <div className="bg-slate-50 rounded-xl p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-purple-100 rounded-lg">
-                  <Package size={20} className="text-purple-600" />
-                </div>
-                <div>
-                  <p className="font-semibold text-slate-800">{req.id}</p>
-                  <p className="text-sm text-slate-500">{t('dashboards.admin.purchaseRequests')}</p>
-                </div>
+              <div>
+                <p className="font-semibold text-slate-800">{req.id}</p>
+                <p className="text-sm text-slate-500">{t('dashboards.admin.purchaseRequests')}</p>
               </div>
-              <span className={`text-sm font-medium ${req.urgency === 'high' ? 'text-rose-600' : req.urgency === 'medium' ? 'text-amber-600' : 'text-slate-600'}`}>
+              <span className={`text-xs font-bold px-3 py-1.5 rounded-full ${req.urgency === 'high' ? 'bg-rose-100 text-rose-700' : req.urgency === 'medium' ? 'bg-amber-100 text-amber-700' : 'bg-slate-100 text-slate-600'}`}>
                 {t(`priorities.${req.urgency}`)}
               </span>
             </div>
 
             {/* Part Details */}
-            <div className="border-t border-slate-100 pt-4">
-              <h4 className="text-sm font-semibold text-slate-700 mb-3">{t('dashboards.admin.partDetails')}</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Package size={18} className="text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.admin.partName')}</p>
-                    <p className="text-sm font-medium text-slate-800">{req.partName}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-slate-100 rounded-lg">
-                    <Tag size={18} className="text-slate-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.admin.category')}</p>
-                    <p className="text-sm font-medium text-slate-800">{req.category}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-emerald-100 rounded-lg">
-                    <Hash size={18} className="text-emerald-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.admin.quantity')}</p>
-                    <p className="text-sm font-medium text-slate-800">{req.quantity}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-amber-100 rounded-lg">
-                    <DollarSign size={18} className="text-amber-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.admin.estimatedCost')}</p>
-                    <p className="text-sm font-medium text-slate-800">{req.estimatedCost} SAR</p>
-                  </div>
-                </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.admin.partName')}</p>
+                <p className="text-sm font-medium text-slate-800">{req.partName}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.admin.category')}</p>
+                <p className="text-sm font-medium text-slate-800">{req.category}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.admin.quantity')}</p>
+                <p className="text-sm font-medium text-slate-800">{req.quantity}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.admin.estimatedCost')}</p>
+                <p className="text-sm font-medium text-slate-800">{req.estimatedCost} SAR</p>
               </div>
             </div>
 
             {/* Vendor & Stock Info */}
             <div className="border-t border-slate-100 pt-4">
-              <h4 className="text-sm font-semibold text-slate-700 mb-3">{t('dashboards.admin.vendorAndStock')}</h4>
+              <p className="text-xs font-bold text-slate-600 mb-3">{t('dashboards.admin.vendorAndStock')}</p>
               <div className="grid grid-cols-2 gap-4">
                 {req.vendor && (
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-purple-100 rounded-lg">
-                      <Building2 size={18} className="text-purple-600" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.admin.vendor')}</p>
-                      <p className="text-sm font-medium text-slate-800">{req.vendor}</p>
-                    </div>
+                  <div>
+                    <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.admin.vendor')}</p>
+                    <p className="text-sm font-medium text-slate-800">{req.vendor}</p>
                   </div>
                 )}
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <User size={18} className="text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">{t('requests.requestedBy')}</p>
-                    <p className="text-sm font-medium text-slate-800">{req.requestedBy}</p>
-                  </div>
+                <div>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('requests.requestedBy')}</p>
+                  <p className="text-sm font-medium text-slate-800">{req.requestedBy}</p>
                 </div>
               </div>
 
@@ -981,20 +827,14 @@ export function AdminDashboard() {
 
             {/* Reason */}
             <div className="border-t border-slate-100 pt-4">
-              <div className="flex items-center gap-2 mb-2">
-                <FileText size={16} className="text-slate-400" />
-                <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.admin.reason')}</p>
-              </div>
+              <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-2">{t('dashboards.admin.reason')}</p>
               <p className="text-sm text-slate-700 bg-slate-50 p-3 rounded-lg">{req.reason}</p>
             </div>
 
             {/* Audit Info */}
-            <div className="border-t border-slate-100 pt-4">
-              <div className="flex items-center gap-2 text-sm">
-                <Clock size={14} className="text-slate-400" />
-                <span className="text-slate-500">{t('dashboards.operation.createdAt')}:</span>
-                <span className="font-medium text-slate-700">{formatDateTime(req.createdAt)}</span>
-              </div>
+            <div className="border-t border-slate-100 pt-4 text-sm">
+              <span className="text-slate-500">{t('dashboards.operation.createdAt')}:</span>{' '}
+              <span className="font-medium text-slate-700">{formatDateTime(req.createdAt)}</span>
             </div>
           </div>
         );
@@ -1002,133 +842,73 @@ export function AdminDashboard() {
       case 'carInventory': {
         const req = selectedRequest as AddVehicleRequest;
         return (
-          <div className="space-y-6">
+          <div className="space-y-5">
             {/* Header */}
             <div className="bg-slate-50 rounded-xl p-4 flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-emerald-100 rounded-lg">
-                  <TrendingUp size={20} className="text-emerald-600" />
-                </div>
-                <div>
-                  <p className="font-semibold text-slate-800">{req.id}</p>
-                  <p className="text-sm text-slate-500">{t('dashboards.admin.addVehicleRequests')}</p>
-                </div>
+              <div>
+                <p className="font-semibold text-slate-800">{req.id}</p>
+                <p className="text-sm text-slate-500">{t('dashboards.admin.addVehicleRequests')}</p>
               </div>
-              <span className="text-sm font-medium text-slate-600">{t('dashboards.admin.newVehicle')}</span>
+              <span className="text-xs font-bold px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-700">{t('dashboards.admin.newVehicle')}</span>
             </div>
 
             {/* Vehicle Details */}
-            <div className="border-t border-slate-100 pt-4">
-              <h4 className="text-sm font-semibold text-slate-700 mb-3">{t('dashboards.admin.vehicleDetails')}</h4>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <Hash size={18} className="text-blue-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">{t('vehicles.plateNumber')}</p>
-                    <p className="text-sm font-medium text-slate-800">{req.plate}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-slate-100 rounded-lg">
-                    <Car size={18} className="text-slate-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.admin.vehicleBrand')}</p>
-                    <p className="text-sm font-medium text-slate-800">{req.brand} {req.model}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-amber-100 rounded-lg">
-                    <Calendar size={18} className="text-amber-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.admin.year')}</p>
-                    <p className="text-sm font-medium text-slate-800">{req.year}</p>
-                  </div>
-                </div>
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <Tag size={18} className="text-purple-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.operation.carType')}</p>
-                    <p className="text-sm font-medium text-slate-800">{t(`dashboards.operation.${req.carType}`)}</p>
-                  </div>
-                </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('vehicles.plateNumber')}</p>
+                <p className="text-sm font-medium text-slate-800">{req.plate}</p>
               </div>
-            </div>
-
-            {/* Additional Details */}
-            <div className="border-t border-slate-100 pt-4">
-              <h4 className="text-sm font-semibold text-slate-700 mb-3">{t('dashboards.admin.additionalDetails')}</h4>
-              <div className="grid grid-cols-2 gap-4">
-                {req.color && (
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-pink-100 rounded-lg">
-                      <Palette size={18} className="text-pink-600" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.admin.color')}</p>
-                      <p className="text-sm font-medium text-slate-800">{req.color}</p>
-                    </div>
-                  </div>
-                )}
-                <div className="flex items-start gap-3">
-                  <div className="p-2 bg-emerald-100 rounded-lg">
-                    <Gauge size={18} className="text-emerald-600" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.admin.fuelType')}</p>
-                    <p className="text-sm font-medium text-slate-800">{req.fuelType}</p>
-                  </div>
-                </div>
-                {req.currentMileage !== null && (
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-blue-100 rounded-lg">
-                      <TrendingUp size={18} className="text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.admin.mileage')}</p>
-                      <p className="text-sm font-medium text-slate-800">{req.currentMileage} km</p>
-                    </div>
-                  </div>
-                )}
-                {req.vin && (
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-slate-100 rounded-lg">
-                      <FileText size={18} className="text-slate-600" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.admin.vin')}</p>
-                      <p className="text-sm font-medium text-slate-800 font-mono text-xs">{req.vin}</p>
-                    </div>
-                  </div>
-                )}
+              <div>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.admin.vehicleBrand')}</p>
+                <p className="text-sm font-medium text-slate-800">{req.brand} {req.model}</p>
               </div>
+              <div>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.admin.year')}</p>
+                <p className="text-sm font-medium text-slate-800">{req.year}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.operation.carType')}</p>
+                <p className="text-sm font-medium text-slate-800">{t(`dashboards.operation.${req.carType}`)}</p>
+              </div>
+              {req.color && (
+                <div>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.admin.color')}</p>
+                  <p className="text-sm font-medium text-slate-800">{req.color}</p>
+                </div>
+              )}
+              <div>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.admin.fuelType')}</p>
+                <p className="text-sm font-medium text-slate-800">{req.fuelType}</p>
+              </div>
+              {req.currentMileage !== null && (
+                <div>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.admin.mileage')}</p>
+                  <p className="text-sm font-medium text-slate-800">{req.currentMileage} km</p>
+                </div>
+              )}
+              {req.vin && (
+                <div className="col-span-2">
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.admin.vin')}</p>
+                  <p className="text-sm font-medium text-slate-800 font-mono">{req.vin}</p>
+                </div>
+              )}
             </div>
 
             {/* Reason */}
             <div className="border-t border-slate-100 pt-4">
-              <div className="flex items-center gap-2 mb-2">
-                <FileText size={16} className="text-slate-400" />
-                <p className="text-xs text-slate-400 uppercase tracking-wide">{t('dashboards.admin.reason')}</p>
-              </div>
+              <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-2">{t('dashboards.admin.reason')}</p>
               <p className="text-sm text-slate-700 bg-slate-50 p-3 rounded-lg">{req.reason}</p>
             </div>
 
             {/* Requester & Audit Info */}
             <div className="border-t border-slate-100 pt-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div className="flex items-center gap-2">
-                  <User size={14} className="text-slate-400" />
-                  <span className="text-slate-500">{t('requests.requestedBy')}:</span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                <div>
+                  <span className="text-slate-500">{t('requests.requestedBy')}:</span>{' '}
                   <span className="font-medium text-slate-700">{req.requestedBy}</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Clock size={14} className="text-slate-400" />
-                  <span className="text-slate-500">{t('dashboards.operation.createdAt')}:</span>
+                <div>
+                  <span className="text-slate-500">{t('dashboards.operation.createdAt')}:</span>{' '}
                   <span className="font-medium text-slate-700">{formatDateTime(req.createdAt)}</span>
                 </div>
               </div>
@@ -1178,9 +958,6 @@ export function AdminDashboard() {
           trendType="info"
         />
       </div>
-
-      {/* Expiry Alerts */}
-      <ExpiryAlertsSection alerts={expiryAlerts} maxVisible={6} />
 
       {/* Fleet Analytics Charts */}
       <div className="space-y-4">

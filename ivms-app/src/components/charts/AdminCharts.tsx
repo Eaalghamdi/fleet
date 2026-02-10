@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useState, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   PieChart,
@@ -12,97 +12,136 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  Sector,
 } from 'recharts';
 import type { Vehicle, MaintenanceRequest, InventoryItem } from '../../types';
 
-// --- Fleet Status Chart (Donut) ---
+// ─── Shared tooltip style ───────────────────────────────────────────────
+
+const tooltipStyle = {
+  backgroundColor: 'white',
+  border: 'none',
+  borderRadius: '12px',
+  boxShadow: '0 4px 24px rgba(0,0,0,0.10)',
+  padding: '10px 14px',
+  fontSize: '13px',
+  lineHeight: '1.5',
+};
+
+// ─── Custom active shape for donut hover ─────────────────────────────────
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function renderActiveShape(props: any) {
+  const {
+    cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill,
+    payload, value, percent,
+  } = props;
+
+  return (
+    <g>
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius - 3}
+        outerRadius={outerRadius + 6}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+        opacity={0.9}
+      />
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={outerRadius + 8}
+        outerRadius={outerRadius + 11}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+        opacity={0.4}
+      />
+      <text x={cx} y={cy - 10} textAnchor="middle" fill="#1e293b" fontSize={14} fontWeight={700}>
+        {payload.name}
+      </text>
+      <text x={cx} y={cy + 8} textAnchor="middle" fill="#64748b" fontSize={12}>
+        {value} ({(percent * 100).toFixed(0)}%)
+      </text>
+    </g>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 1. Fleet Status Donut
+// ═══════════════════════════════════════════════════════════════════════════
 
 interface FleetStatusChartProps {
   vehicles: Vehicle[];
 }
 
-const FLEET_STATUS_COLORS = ['#059669', '#f59e0b', '#f43f5e'];
+const FLEET_COLORS = ['#22c55e', '#f59e0b', '#ef4444']; // green-500, amber-500, red-500
 
 export function FleetStatusChart({ vehicles }: FleetStatusChartProps) {
   const { t } = useTranslation();
 
   const data = useMemo(() => {
     const active = vehicles.filter(v => v.status === 'active').length;
-    const maintenance = vehicles.filter(v => v.status === 'maintenance').length;
+    const maint = vehicles.filter(v => v.status === 'maintenance').length;
     const inactive = vehicles.filter(v => v.status === 'inactive').length;
     return [
       { name: t('dashboards.admin.charts.active'), value: active },
-      { name: t('dashboards.admin.charts.inMaintenance'), value: maintenance },
+      { name: t('dashboards.admin.charts.inMaintenance'), value: maint },
       { name: t('dashboards.admin.charts.inactive'), value: inactive },
     ];
   }, [vehicles, t]);
 
   const total = vehicles.length;
 
+  // Use state for active pie segment
+  const [hoveredIndex, setHoveredIndex] = usePieHover();
+
   return (
-    <ResponsiveContainer width="100%" height={260}>
+    <ResponsiveContainer width="100%" height={280}>
       <PieChart>
         <Pie
+          {...{ activeIndex: hoveredIndex, activeShape: renderActiveShape } as any}
           data={data}
           cx="50%"
-          cy="50%"
-          innerRadius={60}
-          outerRadius={90}
+          cy="45%"
+          innerRadius={55}
+          outerRadius={85}
           paddingAngle={3}
           dataKey="value"
           stroke="none"
+          onMouseEnter={(_, index) => setHoveredIndex(index)}
+          onMouseLeave={() => setHoveredIndex(undefined)}
         >
-          {data.map((_, index) => (
-            <Cell key={`cell-${index}`} fill={FLEET_STATUS_COLORS[index]} />
+          {data.map((_, i) => (
+            <Cell key={i} fill={FLEET_COLORS[i]} />
           ))}
         </Pie>
-        <Tooltip
-          contentStyle={{
-            backgroundColor: '#f8fafc',
-            border: '1px solid #e2e8f0',
-            borderRadius: '12px',
-            fontSize: '13px',
-          }}
-        />
         <Legend
           verticalAlign="bottom"
           iconType="circle"
           iconSize={8}
-          wrapperStyle={{ fontSize: '12px' }}
+          formatter={(value: string) => <span style={{ color: '#475569', fontSize: 12, fontWeight: 500 }}>{value}</span>}
         />
-        {/* Center label */}
-        <text
-          x="50%"
-          y="46%"
-          textAnchor="middle"
-          dominantBaseline="central"
-          className="fill-slate-800"
-          style={{ fontSize: '28px', fontWeight: 800 }}
-        >
-          {total}
-        </text>
-        <text
-          x="50%"
-          y="57%"
-          textAnchor="middle"
-          dominantBaseline="central"
-          className="fill-slate-400"
-          style={{ fontSize: '11px', fontWeight: 500 }}
-        >
-          {t('dashboards.admin.charts.vehicles')}
-        </text>
+        {hoveredIndex === undefined && (
+          <>
+            <text x="50%" y="41%" textAnchor="middle" dominantBaseline="central" fill="#0f172a" fontSize={28} fontWeight={800}>{total}</text>
+            <text x="50%" y="52%" textAnchor="middle" dominantBaseline="central" fill="#94a3b8" fontSize={11} fontWeight={500}>{t('dashboards.admin.charts.vehicles')}</text>
+          </>
+        )}
       </PieChart>
     </ResponsiveContainer>
   );
 }
 
-// --- Maintenance by Type Chart (Bar) ---
+// ═══════════════════════════════════════════════════════════════════════════
+// 2. Maintenance by Type Bar Chart
+// ═══════════════════════════════════════════════════════════════════════════
 
 interface MaintenanceTypeChartProps {
   maintenance: MaintenanceRequest[];
 }
-
-const MAINTENANCE_COLORS = { corrective: '#f43f5e', preventive: '#3b82f6' };
 
 export function MaintenanceTypeChart({ maintenance }: MaintenanceTypeChartProps) {
   const { t } = useTranslation();
@@ -129,59 +168,34 @@ export function MaintenanceTypeChart({ maintenance }: MaintenanceTypeChartProps)
   const preventiveLabel = t('dashboards.admin.charts.preventive');
 
   return (
-    <ResponsiveContainer width="100%" height={260}>
-      <BarChart data={data} barGap={4}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-        <XAxis
-          dataKey="name"
-          tick={{ fontSize: 12, fill: '#64748b' }}
-          axisLine={false}
-          tickLine={false}
-        />
-        <YAxis
-          allowDecimals={false}
-          tick={{ fontSize: 12, fill: '#64748b' }}
-          axisLine={false}
-          tickLine={false}
-        />
-        <Tooltip
-          contentStyle={{
-            backgroundColor: '#f8fafc',
-            border: '1px solid #e2e8f0',
-            borderRadius: '12px',
-            fontSize: '13px',
-          }}
-        />
+    <ResponsiveContainer width="100%" height={280}>
+      <BarChart data={data} barGap={6} barCategoryGap="25%">
+        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
+        <XAxis dataKey="name" tick={{ fontSize: 12, fill: '#64748b', fontWeight: 500 }} axisLine={false} tickLine={false} />
+        <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={30} />
+        <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#f8fafc', radius: 8 }} />
         <Legend
           verticalAlign="bottom"
           iconType="circle"
           iconSize={8}
-          wrapperStyle={{ fontSize: '12px' }}
+          formatter={(value: string) => <span style={{ color: '#475569', fontSize: 12, fontWeight: 500 }}>{value}</span>}
         />
-        <Bar
-          dataKey={correctiveLabel}
-          fill={MAINTENANCE_COLORS.corrective}
-          radius={[4, 4, 0, 0]}
-          maxBarSize={32}
-        />
-        <Bar
-          dataKey={preventiveLabel}
-          fill={MAINTENANCE_COLORS.preventive}
-          radius={[4, 4, 0, 0]}
-          maxBarSize={32}
-        />
+        <Bar dataKey={correctiveLabel} fill="#f97316" radius={[6, 6, 0, 0]} maxBarSize={36} />
+        <Bar dataKey={preventiveLabel} fill="#06b6d4" radius={[6, 6, 0, 0]} maxBarSize={36} />
       </BarChart>
     </ResponsiveContainer>
   );
 }
 
-// --- Fleet Utilization Chart (Donut) ---
+// ═══════════════════════════════════════════════════════════════════════════
+// 3. Fleet Utilization Donut
+// ═══════════════════════════════════════════════════════════════════════════
 
 interface FleetUtilizationChartProps {
   vehicles: Vehicle[];
 }
 
-const UTILIZATION_COLORS = ['#059669', '#cbd5e1'];
+const UTIL_COLORS = ['#6366f1', '#e2e8f0']; // indigo-500, slate-200
 
 export function FleetUtilizationChart({ vehicles }: FleetUtilizationChartProps) {
   const { t } = useTranslation();
@@ -195,72 +209,58 @@ export function FleetUtilizationChart({ vehicles }: FleetUtilizationChartProps) 
     ];
   }, [vehicles, t]);
 
-  const pct = vehicles.length > 0
-    ? Math.round((data[0].value / vehicles.length) * 100)
-    : 0;
+  const pct = vehicles.length > 0 ? Math.round((data[0].value / vehicles.length) * 100) : 0;
+  const [hoveredIndex, setHoveredIndex] = usePieHover();
 
   return (
-    <ResponsiveContainer width="100%" height={260}>
+    <ResponsiveContainer width="100%" height={280}>
       <PieChart>
         <Pie
+          {...{ activeIndex: hoveredIndex, activeShape: renderActiveShape } as any}
           data={data}
           cx="50%"
-          cy="50%"
-          innerRadius={60}
-          outerRadius={90}
+          cy="45%"
+          innerRadius={55}
+          outerRadius={85}
           paddingAngle={3}
           dataKey="value"
           stroke="none"
+          onMouseEnter={(_, index) => setHoveredIndex(index)}
+          onMouseLeave={() => setHoveredIndex(undefined)}
         >
-          {data.map((_, index) => (
-            <Cell key={`cell-${index}`} fill={UTILIZATION_COLORS[index]} />
+          {data.map((_, i) => (
+            <Cell key={i} fill={UTIL_COLORS[i]} />
           ))}
         </Pie>
-        <Tooltip
-          contentStyle={{
-            backgroundColor: '#f8fafc',
-            border: '1px solid #e2e8f0',
-            borderRadius: '12px',
-            fontSize: '13px',
-          }}
-        />
         <Legend
           verticalAlign="bottom"
           iconType="circle"
           iconSize={8}
-          wrapperStyle={{ fontSize: '12px' }}
+          formatter={(value: string) => <span style={{ color: '#475569', fontSize: 12, fontWeight: 500 }}>{value}</span>}
         />
-        {/* Center label showing utilization % */}
-        <text
-          x="50%"
-          y="46%"
-          textAnchor="middle"
-          dominantBaseline="central"
-          className="fill-slate-800"
-          style={{ fontSize: '28px', fontWeight: 800 }}
-        >
-          {pct}%
-        </text>
-        <text
-          x="50%"
-          y="57%"
-          textAnchor="middle"
-          dominantBaseline="central"
-          className="fill-slate-400"
-          style={{ fontSize: '11px', fontWeight: 500 }}
-        >
-          {t('dashboards.admin.charts.utilization')}
-        </text>
+        {hoveredIndex === undefined && (
+          <>
+            <text x="50%" y="41%" textAnchor="middle" dominantBaseline="central" fill="#0f172a" fontSize={28} fontWeight={800}>{pct}%</text>
+            <text x="50%" y="52%" textAnchor="middle" dominantBaseline="central" fill="#94a3b8" fontSize={11} fontWeight={500}>{t('dashboards.admin.charts.utilization')}</text>
+          </>
+        )}
       </PieChart>
     </ResponsiveContainer>
   );
 }
 
-// --- Inventory Stock Levels Chart (Bar) ---
+// ═══════════════════════════════════════════════════════════════════════════
+// 4. Inventory Stock Levels Bar Chart
+// ═══════════════════════════════════════════════════════════════════════════
 
 interface InventoryStockChartProps {
   inventory: InventoryItem[];
 }
+
+const STOCK_PALETTE = [
+  '#8b5cf6', '#06b6d4', '#f97316', '#ec4899',
+  '#22c55e', '#eab308', '#6366f1', '#ef4444',
+];
 
 export function InventoryStockChart({ inventory }: InventoryStockChartProps) {
   const { t } = useTranslation();
@@ -273,7 +273,6 @@ export function InventoryStockChart({ inventory }: InventoryStockChartProps) {
         name: item.name.length > 14 ? item.name.slice(0, 12) + '...' : item.name,
         [t('dashboards.admin.charts.currentStock')]: item.quantity,
         [t('dashboards.admin.charts.minStock')]: item.minStock,
-        isBelowMin: item.quantity < item.minStock,
       }));
   }, [inventory, t]);
 
@@ -281,59 +280,45 @@ export function InventoryStockChart({ inventory }: InventoryStockChartProps) {
   const minLabel = t('dashboards.admin.charts.minStock');
 
   return (
-    <ResponsiveContainer width="100%" height={260}>
-      <BarChart data={data} barGap={2}>
-        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+    <ResponsiveContainer width="100%" height={280}>
+      <BarChart data={data} barGap={3} barCategoryGap="20%">
+        <CartesianGrid strokeDasharray="3 3" stroke="#f1f5f9" vertical={false} />
         <XAxis
           dataKey="name"
-          tick={{ fontSize: 11, fill: '#64748b' }}
+          tick={{ fontSize: 10, fill: '#64748b', fontWeight: 500 }}
           axisLine={false}
           tickLine={false}
           interval={0}
-          angle={-20}
+          angle={-15}
           textAnchor="end"
-          height={50}
+          height={45}
         />
-        <YAxis
-          allowDecimals={false}
-          tick={{ fontSize: 12, fill: '#64748b' }}
-          axisLine={false}
-          tickLine={false}
-        />
-        <Tooltip
-          contentStyle={{
-            backgroundColor: '#f8fafc',
-            border: '1px solid #e2e8f0',
-            borderRadius: '12px',
-            fontSize: '13px',
-          }}
-        />
+        <YAxis allowDecimals={false} tick={{ fontSize: 11, fill: '#94a3b8' }} axisLine={false} tickLine={false} width={30} />
+        <Tooltip contentStyle={tooltipStyle} cursor={{ fill: '#f8fafc', radius: 8 }} />
         <Legend
           verticalAlign="bottom"
           iconType="circle"
           iconSize={8}
-          wrapperStyle={{ fontSize: '12px' }}
+          formatter={(value: string) => <span style={{ color: '#475569', fontSize: 12, fontWeight: 500 }}>{value}</span>}
         />
-        <Bar
-          dataKey={stockLabel}
-          radius={[4, 4, 0, 0]}
-          maxBarSize={28}
-        >
-          {data.map((entry, index) => (
-            <Cell
-              key={`cell-${index}`}
-              fill={entry.isBelowMin ? '#f43f5e' : '#059669'}
-            />
+        <Bar dataKey={stockLabel} radius={[6, 6, 0, 0]} maxBarSize={30}>
+          {data.map((_, i) => (
+            <Cell key={i} fill={STOCK_PALETTE[i % STOCK_PALETTE.length]} />
           ))}
         </Bar>
-        <Bar
-          dataKey={minLabel}
-          fill="#94a3b8"
-          radius={[4, 4, 0, 0]}
-          maxBarSize={28}
-          opacity={0.4}
-        />
+        <Bar dataKey={minLabel} radius={[6, 6, 0, 0]} maxBarSize={30} opacity={0.25}>
+          {data.map((_, i) => (
+            <Cell key={`min-${i}`} fill={STOCK_PALETTE[i % STOCK_PALETTE.length]} />
+          ))}
+        </Bar>
       </BarChart>
     </ResponsiveContainer>
   );
+}
+
+// ─── Shared hook for pie hover ────────────────────────────────────────────
+
+function usePieHover(): [number | undefined, (v: number | undefined) => void] {
+  const [idx, setIdx] = useState<number | undefined>(undefined);
+  return [idx, setIdx];
 }

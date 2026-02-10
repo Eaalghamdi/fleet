@@ -23,7 +23,7 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [stepErrors, setStepErrors] = useState<Record<string, string>>({});
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
-  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [_imageFiles, setImageFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [formData, setFormData] = useState({
@@ -478,7 +478,7 @@ export function VehicleForm({ vehicle, onSubmit, onCancel }: VehicleFormProps) {
     </div>
   );
 
-  const stepContent: Record<number, JSX.Element> = {
+  const stepContent: Record<number, React.JSX.Element> = {
     1: renderStep1(),
     2: renderStep2(),
     3: renderStep3(),
