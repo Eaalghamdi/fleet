@@ -1,14 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
-import { Menu, Bell } from 'lucide-react';
+import { Menu, Bell, AlertTriangle } from 'lucide-react';
 import { Sidebar, Header } from './components/layout';
-import { Dashboard, Vehicles, Maintenance, Inventory, Reports, Unauthorized, AdminDashboard, OperationDashboard, GarageDashboard, MaintenanceDashboard, Settings, UserManagement, Drivers } from './pages';
+import { Dashboard, Vehicles, Maintenance, Inventory, Reports, Unauthorized, AdminDashboard, OperationDashboard, GarageDashboard, MaintenanceDashboard, Settings, UserManagement, Drivers, Alerts } from './pages';
 import { AppProvider, useApp } from './contexts/AppContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { ProtectedRoute, LoginPage } from './components/auth';
 import { ToastContainer } from './components/ui';
 import type { ViewType } from './types';
+import { getVehicleExpiryAlerts, getDriverExpiryAlerts, countByStatus } from './utils/expiryUtils';
 
 function AppContent() {
   const [activeTab, setActiveTab] = useState<ViewType>('dashboard');
@@ -16,6 +17,7 @@ function AppContent() {
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const { logout, user } = useAuth();
   const { direction } = useLanguage();
+  const { vehicles, drivers } = useApp();
 
   // Close mobile sidebar when screen size changes to desktop
   useEffect(() => {
@@ -33,6 +35,13 @@ function AppContent() {
     setActiveTab(tab);
     setIsMobileSidebarOpen(false);
   };
+
+  const mobileAlertCount = useMemo(() => {
+    const vehicleAlerts = getVehicleExpiryAlerts(vehicles);
+    const driverAlerts = getDriverExpiryAlerts(drivers);
+    const { total } = countByStatus([...vehicleAlerts, ...driverAlerts]);
+    return total;
+  }, [vehicles, drivers]);
 
   // Get department-specific dashboard
   const getDepartmentDashboard = () => {
@@ -64,6 +73,8 @@ function AppContent() {
         return <UserManagement />;
       case 'drivers':
         return <Drivers />;
+      case 'alerts':
+        return <Alerts />;
       case 'reports':
         return <Reports />;
       case 'settings':
@@ -85,11 +96,25 @@ function AppContent() {
           <Menu size={24} className="text-slate-700" />
         </button>
         <span className="text-lg font-black text-slate-800 tracking-tighter">IVMP</span>
-        {/* Notification Bell */}
-        <button className="p-2 bg-white border border-slate-200 rounded-xl text-slate-500 relative">
-          <Bell size={16} />
-          <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 border-2 border-white rounded-full"></span>
-        </button>
+        <div className="flex items-center gap-2">
+          {/* Alert Icon */}
+          <button
+            onClick={() => handleTabChange('alerts')}
+            className="p-2 bg-white border border-slate-200 rounded-xl text-slate-500 relative"
+          >
+            <AlertTriangle size={16} />
+            {mobileAlertCount > 0 && (
+              <span className="absolute top-1 right-1 min-w-[16px] h-[16px] bg-amber-500 border-2 border-white rounded-full text-[8px] font-bold text-white flex items-center justify-center">
+                {mobileAlertCount > 9 ? '9+' : mobileAlertCount}
+              </span>
+            )}
+          </button>
+          {/* Notification Bell */}
+          <button className="p-2 bg-white border border-slate-200 rounded-xl text-slate-500 relative">
+            <Bell size={16} />
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-rose-500 border-2 border-white rounded-full"></span>
+          </button>
+        </div>
       </div>
 
       {/* Mobile Sidebar Overlay */}
@@ -115,11 +140,11 @@ function AppContent() {
 
       {/* Main Content */}
       <main className={`flex-1 transition-all duration-500 pt-16 lg:pt-0 ${isSidebarOpen ? 'lg:rtl:mr-72 lg:ltr:ml-72' : 'lg:rtl:mr-20 lg:ltr:ml-20'}`}>
-        {/* Header / Command Bar - Only on Dashboard */}
-        {activeTab === 'dashboard' && <Header />}
+        {/* Header / Command Bar */}
+        <Header onNavigateToAlerts={() => handleTabChange('alerts')} />
 
         {/* View Content */}
-        <div className={`px-4 lg:px-10 pb-10 ${activeTab !== 'dashboard' ? 'pt-4 lg:pt-10' : ''}`}>
+        <div className="px-4 lg:px-10 pb-10">
           {renderView()}
         </div>
       </main>

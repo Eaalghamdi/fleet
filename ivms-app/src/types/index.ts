@@ -53,7 +53,7 @@ export interface NavItem {
 
 export type BadgeType = 'success' | 'danger' | 'warning' | 'info';
 
-export type ViewType = 'dashboard' | 'vehicles' | 'maintenance' | 'inventory' | 'reports' | 'settings' | 'users' | 'drivers';
+export type ViewType = 'dashboard' | 'vehicles' | 'maintenance' | 'inventory' | 'reports' | 'settings' | 'users' | 'drivers' | 'alerts';
 
 export interface Notification {
   id: string;

@@ -9,8 +9,6 @@ import {
 import { useTranslation } from 'react-i18next';
 import { StatCard, GlassCard } from '../../components/ui';
 import { useApp } from '../../contexts/AppContext';
-import { getVehicleExpiryAlerts } from '../../utils/expiryUtils';
-import { ExpiryAlertsSection } from '../../components/dashboard/ExpiryAlertsSection';
 
 // Mock pending triage data
 const mockPendingTriage = [
@@ -33,12 +31,7 @@ const mockScheduled = [
 
 export function MaintenanceDashboard() {
   const { t } = useTranslation();
-  const { vehicles, maintenance, inventory } = useApp();
-
-  const maintenanceAlerts = useMemo(() => {
-    const allAlerts = getVehicleExpiryAlerts(vehicles);
-    return allAlerts.filter(a => a.field === 'nextMaintenance');
-  }, [vehicles]);
+  const { maintenance, inventory } = useApp();
 
   const [activeTab, setActiveTab] = useState<'triage' | 'inprogress' | 'scheduled' | 'parts'>('triage');
 
@@ -91,9 +84,6 @@ export function MaintenanceDashboard() {
           trendType="success"
         />
       </div>
-
-      {/* Expiry Alerts */}
-      <ExpiryAlertsSection alerts={maintenanceAlerts} maxVisible={6} />
 
       {/* Main Card with Tabs */}
       <GlassCard>

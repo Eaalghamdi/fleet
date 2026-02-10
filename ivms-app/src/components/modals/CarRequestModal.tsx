@@ -286,7 +286,7 @@ export function CarRequestModal({ request, onClose, onMarkInTransit, onCancel, o
           {canEdit && onEdit && (
             <button
               onClick={() => onEdit(request)}
-              className="flex-1 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-medium transition-colors"
+              className="flex-1 px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl font-medium transition-colors"
             >
               {t('dashboards.operation.editRequest')}
             </button>
@@ -307,12 +307,6 @@ export function CarRequestModal({ request, onClose, onMarkInTransit, onCancel, o
               {t('dashboards.operation.cancelRequest')}
             </button>
           )}
-          <button
-            onClick={onClose}
-            className="px-6 py-2.5 bg-slate-200 hover:bg-slate-300 text-slate-700 rounded-xl font-medium transition-colors"
-          >
-            {t('common.close')}
-          </button>
         </div>
       </div>
     </div>

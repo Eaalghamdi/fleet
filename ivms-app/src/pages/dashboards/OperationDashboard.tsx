@@ -20,14 +20,10 @@ import { carRequests as initialCarRequests } from '../../data';
 import type { CarRequest, CarRequestStatus } from '../../types';
 import { CarRequestForm } from '../../components/forms/CarRequestForm';
 import { CarRequestModal } from '../../components/modals/CarRequestModal';
-import { getDriverExpiryAlerts } from '../../utils/expiryUtils';
-import { ExpiryAlertsSection } from '../../components/dashboard/ExpiryAlertsSection';
 
 export function OperationDashboard() {
   const { t } = useTranslation();
-  const { drivers, showToast } = useApp();
-
-  const driverAlerts = useMemo(() => getDriverExpiryAlerts(drivers), [drivers]);
+  const { showToast } = useApp();
 
   // State management
   const [carRequests, setCarRequests] = useState<CarRequest[]>(initialCarRequests);
@@ -260,9 +256,6 @@ export function OperationDashboard() {
           trendType="success"
         />
       </div>
-
-      {/* Expiry Alerts */}
-      <ExpiryAlertsSection alerts={driverAlerts} maxVisible={6} />
 
       {/* Quick Actions */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">

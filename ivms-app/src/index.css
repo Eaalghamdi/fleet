@@ -1,6 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap');
 @import "tailwindcss";
 
+/* Prevent Tailwind CSS v4 resets from overriding Recharts SVG fills */
+.recharts-surface path[fill],
+.recharts-surface rect[fill],
+.recharts-surface circle[fill] {
+  fill: revert;
+  stroke: revert;
+}
+
 body {
   font-family: 'Tajawal', system-ui, -apple-system, sans-serif;
   margin: 0;

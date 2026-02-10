@@ -19,21 +19,12 @@ import {
 import { useApp } from '../contexts/AppContext';
 import { useLanguage } from '../contexts/LanguageContext';
 import { fuelData } from '../data';
-import { getVehicleExpiryAlerts, getDriverExpiryAlerts } from '../utils/expiryUtils';
-import { ExpiryAlertsSection } from '../components/dashboard/ExpiryAlertsSection';
 
 export function Dashboard() {
   const { t } = useTranslation();
   const { direction } = useLanguage();
-  const { vehicles, drivers, maintenance, showToast } = useApp();
+  const { vehicles, maintenance, showToast } = useApp();
   const isRTL = direction === 'rtl';
-
-  // Critical expiry alerts (expired items only)
-  const criticalAlerts = useMemo(() => {
-    const vehicleAlerts = getVehicleExpiryAlerts(vehicles);
-    const driverAlerts = getDriverExpiryAlerts(drivers);
-    return [...vehicleAlerts, ...driverAlerts].filter(a => a.status === 'expired');
-  }, [vehicles, drivers]);
 
   // Calculate statistics from real data
   const stats = useMemo(() => {
@@ -133,9 +124,6 @@ ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}
         />
       </div>
 
-      {/* Critical Expiry Alerts */}
-      <ExpiryAlertsSection alerts={criticalAlerts} maxVisible={3} />
-
       {/* Fleet Analysis Section */}
       <div className="space-y-6 pt-2">
         <div className="flex items-center justify-between">
@@ -206,7 +194,7 @@ ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}
             <h3 className="font-bold text-slate-800">{t('pages.dashboard.monthlyFuelConsumption')}</h3>
             <div className="flex gap-2">
               <span className="flex items-center gap-1 text-xs text-slate-500">
-                <span className="w-3 h-3 bg-emerald-600 rounded-full"></span> {t('pages.dashboard.actualConsumption')}
+                <span className="w-3 h-3 bg-cyan-500 rounded-full"></span> {t('pages.dashboard.actualConsumption')}
               </span>
             </div>
           </div>
@@ -215,7 +203,7 @@ ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}
               <div key={i} className="flex-1 flex flex-col items-center group cursor-pointer h-full">
                 <div className="flex-1 w-full flex items-end">
                   <div
-                    className="w-full bg-emerald-100 rounded-t-lg group-hover:bg-emerald-500 transition-all duration-300 relative"
+                    className="w-full bg-cyan-100 rounded-t-lg group-hover:bg-cyan-500 transition-all duration-300 relative"
                     style={{ height: `${item.value}%` }}
                   >
                     <div className="absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10">
@@ -241,7 +229,7 @@ ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}
                   cy="18"
                   r="15.9"
                   fill="transparent"
-                  stroke="#059669"
+                  stroke="#10b981"
                   strokeWidth="3"
                   strokeDasharray={`${stats.totalVehicles > 0 ? (stats.activeVehicles / stats.totalVehicles * 100) : 0} 100`}
                 ></circle>
@@ -250,7 +238,7 @@ ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}
                   cy="18"
                   r="15.9"
                   fill="transparent"
-                  stroke="#f59e0b"
+                  stroke="#f97316"
                   strokeWidth="3"
                   strokeDasharray={`${stats.totalVehicles > 0 ? (stats.maintenanceVehicles / stats.totalVehicles * 100) : 0} 100`}
                   strokeDashoffset={`-${stats.totalVehicles > 0 ? (stats.activeVehicles / stats.totalVehicles * 100) : 0}`}
@@ -260,7 +248,7 @@ ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}
                   cy="18"
                   r="15.9"
                   fill="transparent"
-                  stroke="#ef4444"
+                  stroke="#e879f9"
                   strokeWidth="3"
                   strokeDasharray={`${stats.totalVehicles > 0 ? (stats.inactiveVehicles / stats.totalVehicles * 100) : 0} 100`}
                   strokeDashoffset={`-${stats.totalVehicles > 0 ? ((stats.activeVehicles + stats.maintenanceVehicles) / stats.totalVehicles * 100) : 0}`}
@@ -274,19 +262,19 @@ ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}
             <div className="w-full space-y-3">
               <div className="flex justify-between items-center">
                 <span className="flex items-center gap-2 text-xs text-slate-600">
-                  <span className="w-2 h-2 bg-emerald-600 rounded-full"></span> {t('pages.dashboard.active')}
+                  <span className="w-2 h-2 bg-emerald-500 rounded-full"></span> {t('pages.dashboard.active')}
                 </span>
                 <span className="text-xs font-bold text-slate-800">{stats.activeVehicles} {t('pages.dashboard.vehicle')}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="flex items-center gap-2 text-xs text-slate-600">
-                  <span className="w-2 h-2 bg-amber-500 rounded-full"></span> {t('pages.dashboard.maintenance')}
+                  <span className="w-2 h-2 bg-orange-500 rounded-full"></span> {t('pages.dashboard.maintenance')}
                 </span>
                 <span className="text-xs font-bold text-slate-800">{stats.maintenanceVehicles} {t('pages.dashboard.vehicle')}</span>
               </div>
               <div className="flex justify-between items-center">
                 <span className="flex items-center gap-2 text-xs text-slate-600">
-                  <span className="w-2 h-2 bg-rose-500 rounded-full"></span> {t('pages.dashboard.stopped')}
+                  <span className="w-2 h-2 bg-fuchsia-400 rounded-full"></span> {t('pages.dashboard.stopped')}
                 </span>
                 <span className="text-xs font-bold text-slate-800">{stats.inactiveVehicles} {t('pages.dashboard.vehicle')}</span>
               </div>

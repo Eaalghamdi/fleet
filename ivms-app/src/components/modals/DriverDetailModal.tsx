@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, User, CreditCard, Car, Shield, Plus, Pencil, Trash2, Clock } from 'lucide-react';
+import { X, User, CreditCard, Car, Shield, Plus, Pencil, Clock } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useApp } from '../../contexts/AppContext';
 import type { Driver, DriverPermit } from '../../types';
@@ -305,15 +305,9 @@ export function DriverDetailModal({ driver, onClose, onEdit, onDelete }: DriverD
           </button>
           <button
             onClick={() => { onClose(); onDelete(driver); }}
-            className="px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center gap-2"
+            className="flex-1 px-4 py-2.5 bg-rose-600 hover:bg-rose-700 text-white rounded-xl font-medium transition-colors flex items-center justify-center"
           >
-            <Trash2 size={16} />
-          </button>
-          <button
-            onClick={onClose}
-            className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
-          >
-            {t('common.close')}
+            {t('common.delete')}
           </button>
         </div>
       </div>

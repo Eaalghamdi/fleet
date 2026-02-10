@@ -330,46 +330,80 @@ export function Vehicles() {
         isOpen={!!viewingVehicle}
         onClose={() => setViewingVehicle(null)}
         title={t('pages.vehicles.vehicleDetails')}
-        size="md"
+        size="lg"
       >
         {viewingVehicle && (
-          <div className="p-6 space-y-4">
-            <div className="flex items-center gap-4 pb-4 border-b border-slate-100">
-              <div className="w-16 h-16 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600">
-                <Car size={32} />
+          <div className="p-5 sm:p-6 space-y-5">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100">
+              <div>
+                <h3 className="text-lg font-bold text-slate-800">{viewingVehicle.brand} {viewingVehicle.model}</h3>
+                <p className="text-sm text-slate-500">{viewingVehicle.plate} &middot; {viewingVehicle.year}</p>
+              </div>
+              <span className={`flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full ${
+                viewingVehicle.status === 'active' ? 'bg-emerald-100 text-emerald-700' : viewingVehicle.status === 'maintenance' ? 'bg-amber-100 text-amber-700' : 'bg-rose-100 text-rose-700'
+              }`}>
+                <span className={`w-1.5 h-1.5 rounded-full ${
+                  viewingVehicle.status === 'active' ? 'bg-emerald-500' : viewingVehicle.status === 'maintenance' ? 'bg-amber-500' : 'bg-rose-500'
+                }`}></span>
+                {getTranslatedStatus(viewingVehicle.status)}
+              </span>
+            </div>
+
+            {/* Vehicle Info */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+              <div>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('forms.vehicle.driver')}</p>
+                <p className="text-sm font-medium text-slate-800">{viewingVehicle.driver || '-'}</p>
               </div>
               <div>
-                <h3 className="text-lg font-bold text-slate-800">{viewingVehicle.plate}</h3>
-                <p className="text-sm text-slate-500">{viewingVehicle.brand} {viewingVehicle.model} ({viewingVehicle.year})</p>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('dashboards.garage.mileage')}</p>
+                <p className="text-sm font-medium text-slate-800">{viewingVehicle.mileage.toLocaleString()} {t('common.kilometers')}</p>
+              </div>
+              <div>
+                <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('forms.vehicle.currentLocation')}</p>
+                <p className="text-sm font-medium text-slate-800">{viewingVehicle.location || '-'}</p>
+              </div>
+              {viewingVehicle.vin && (
+                <div className="col-span-2">
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('forms.vehicle.vin')}</p>
+                  <p className="text-sm font-medium text-slate-800 font-mono">{viewingVehicle.vin}</p>
+                </div>
+              )}
+            </div>
+
+            {/* Insurance & Dates */}
+            <div className="border-t border-slate-100 pt-4">
+              <p className="text-xs font-bold text-slate-600 mb-3">{t('forms.vehicle.steps.insuranceWarranty')}</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <div>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('forms.vehicle.insuranceIssueDate')}</p>
+                  <p className="text-sm font-medium text-slate-800">{viewingVehicle.insuranceIssueDate ? new Date(viewingVehicle.insuranceIssueDate).toLocaleDateString() : '-'}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('forms.vehicle.insuranceExpiryDate')}</p>
+                  <p className="text-sm font-medium text-slate-800">{viewingVehicle.insuranceExpiryDate ? new Date(viewingVehicle.insuranceExpiryDate).toLocaleDateString() : '-'}</p>
+                </div>
+                <div>
+                  <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('forms.vehicle.warrantyExpiryDate')}</p>
+                  <p className="text-sm font-medium text-slate-800">{viewingVehicle.warrantyExpiryDate ? new Date(viewingVehicle.warrantyExpiryDate).toLocaleDateString() : '-'}</p>
+                </div>
+                {viewingVehicle.registrationExpiryDate && (
+                  <div>
+                    <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('forms.vehicle.registrationExpiryDate')}</p>
+                    <p className="text-sm font-medium text-slate-800">{new Date(viewingVehicle.registrationExpiryDate).toLocaleDateString()}</p>
+                  </div>
+                )}
+                {viewingVehicle.nextMaintenanceDate && (
+                  <div>
+                    <p className="text-[10px] text-slate-400 uppercase tracking-wide mb-1">{t('forms.vehicle.nextMaintenanceDate')}</p>
+                    <p className="text-sm font-medium text-slate-800">{new Date(viewingVehicle.nextMaintenanceDate).toLocaleDateString()}</p>
+                  </div>
+                )}
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <p className="text-xs text-slate-400 mb-1">{t('dashboards.garage.status')}</p>
-                <span className={`flex items-center gap-1.5 text-sm font-medium ${
-                  viewingVehicle.status === 'active' ? 'text-emerald-600' : viewingVehicle.status === 'maintenance' ? 'text-amber-600' : 'text-rose-500'
-                }`}>
-                  <span className={`w-2 h-2 rounded-full ${
-                    viewingVehicle.status === 'active' ? 'bg-emerald-500' : viewingVehicle.status === 'maintenance' ? 'bg-amber-500' : 'bg-rose-500'
-                  }`}></span>
-                  {getTranslatedStatus(viewingVehicle.status)}
-                </span>
-              </div>
-              <div>
-                <p className="text-xs text-slate-400 mb-1">{t('dashboards.garage.year')}</p>
-                <p className="text-sm font-medium text-slate-700">{viewingVehicle.year}</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-400 mb-1">{t('dashboards.garage.mileage')}</p>
-                <p className="text-sm font-medium text-slate-700">{viewingVehicle.mileage.toLocaleString()} {t('common.kilometers')}</p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-400 mb-1">{t('dashboards.garage.plate')}</p>
-                <p className="text-sm font-medium text-slate-700">{viewingVehicle.plate}</p>
-              </div>
-            </div>
-
+            {/* Actions */}
             <div className="flex gap-3 pt-4 border-t border-slate-100">
               {canManageVehicles && (
                 <>
@@ -394,12 +428,6 @@ export function Vehicles() {
                   </button>
                 </>
               )}
-              <button
-                onClick={() => setViewingVehicle(null)}
-                className="flex-1 px-4 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl font-medium transition-colors"
-              >
-                {t('common.close')}
-              </button>
             </div>
           </div>
         )}

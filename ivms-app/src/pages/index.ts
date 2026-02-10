@@ -7,4 +7,5 @@ export { Unauthorized } from './Unauthorized';
 export { Settings } from './Settings';
 export { UserManagement } from './UserManagement';
 export { Drivers } from './Drivers';
+export { Alerts } from './Alerts';
 export { AdminDashboard, OperationDashboard, GarageDashboard, MaintenanceDashboard } from './dashboards';
