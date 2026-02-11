@@ -93,7 +93,7 @@ ${new Date().toLocaleDateString(isRTL ? 'ar-SA' : 'en-US')}
   return (
     <div className="space-y-5 sm:space-y-8 animate-in fade-in slide-in-from-top-2 duration-700">
       {/* Stats Cards Row */}
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
           title={t('pages.dashboard.totalVehicles')}
           value={stats.totalVehicles.toString()}

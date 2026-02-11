@@ -98,7 +98,7 @@ export function DriverDetailModal({ driver, onClose, onEdit, onDelete }: DriverD
               <User size={16} />
               {t('pages.drivers.personalInfo')}
             </h4>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <p className="text-xs text-slate-400 mb-1">{t('pages.drivers.nationalId')}</p>
                 <p className="text-sm font-medium text-slate-700">{driver.nationalId}</p>
@@ -126,7 +126,7 @@ export function DriverDetailModal({ driver, onClose, onEdit, onDelete }: DriverD
               <CreditCard size={16} />
               {t('pages.drivers.licenseInfo')}
             </h4>
-            <div className="grid grid-cols-2 gap-4 p-4 bg-slate-50 rounded-xl">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-xl">
               <div>
                 <p className="text-xs text-slate-400 mb-1">{t('pages.drivers.licenseNumber')}</p>
                 <p className="text-sm font-medium text-slate-700">{driver.license.number}</p>

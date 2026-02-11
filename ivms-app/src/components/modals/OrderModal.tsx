@@ -46,7 +46,7 @@ export function OrderModal({ isOpen, onClose, item, onSubmit }: OrderModalProps)
         </div>
 
         {/* Current Stock */}
-        <div className="grid grid-cols-2 gap-4 text-center">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-center">
           <div className="p-3 bg-slate-50 rounded-xl">
             <p className="text-xs text-slate-400 mb-1">{t('modals.order.currentQuantity')}</p>
             <p className="text-xl font-bold text-slate-800">{item.quantity}</p>
@@ -66,7 +66,7 @@ export function OrderModal({ isOpen, onClose, item, onSubmit }: OrderModalProps)
             <button
               type="button"
               onClick={() => setQuantity(Math.max(1, quantity - 5))}
-              className="w-12 h-12 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-lg transition-colors"
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-lg transition-colors"
             >
               -5
             </button>
@@ -80,7 +80,7 @@ export function OrderModal({ isOpen, onClose, item, onSubmit }: OrderModalProps)
             <button
               type="button"
               onClick={() => setQuantity(quantity + 5)}
-              className="w-12 h-12 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-lg transition-colors"
+              className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-lg transition-colors"
             >
               +5
             </button>
@@ -88,13 +88,13 @@ export function OrderModal({ isOpen, onClose, item, onSubmit }: OrderModalProps)
         </div>
 
         {/* Quick Select */}
-        <div className="flex gap-2">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
           {[10, 25, 50, 100].map((q) => (
             <button
               key={q}
               type="button"
               onClick={() => setQuantity(q)}
-              className={`flex-1 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`py-2 rounded-lg text-sm font-medium transition-colors ${
                 quantity === q
                   ? 'bg-emerald-600 text-white'
                   : 'bg-slate-100 text-slate-600 hover:bg-slate-200'

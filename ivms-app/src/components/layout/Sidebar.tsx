@@ -1,99 +1,40 @@
 import {
-  LayoutDashboard,
-  Car,
-  Wrench,
-  Package,
-  FileText,
-  LogOut,
   ChevronLeft,
   ChevronRight,
   User,
-  Users,
-  X,
+  LogOut,
 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { SidebarItem } from '../ui';
-import type { ViewType, NavItem } from '../../types';
+import { getNavItemsForDepartment, getDepartmentLabel } from '../../utils/navUtils';
+import type { ViewType } from '../../types';
 
 interface SidebarProps {
   activeTab: ViewType;
   setActiveTab: (tab: ViewType) => void;
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  isMobileOpen?: boolean;
-  setIsMobileOpen?: (open: boolean) => void;
   onLogout?: () => void;
   userName?: string;
   userDepartment?: string;
 }
 
-export function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen, isMobileOpen, setIsMobileOpen, onLogout, userName, userDepartment }: SidebarProps) {
+export function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen, onLogout, userName, userDepartment }: SidebarProps) {
   const { t } = useTranslation();
   const { isRTL } = useLanguage();
 
   const CollapseIcon = isRTL ? ChevronLeft : ChevronRight;
   const ExpandIcon = isRTL ? ChevronRight : ChevronLeft;
 
-  // Navigation items per department with translations
-  const getNavItemsForDepartment = (department?: string): NavItem[] => {
-    const baseItems: NavItem[] = [
-      { id: 'dashboard', label: t('nav.dashboard'), icon: LayoutDashboard },
-    ];
-
-    switch (department) {
-      case 'ADMIN':
-        return [
-          { id: 'dashboard', label: t('nav.adminDashboard'), icon: LayoutDashboard },
-          { id: 'vehicles', label: t('nav.vehicleManagement'), icon: Car },
-          { id: 'maintenance', label: t('nav.maintenanceManagement'), icon: Wrench },
-          { id: 'inventory', label: t('nav.inventoryManagement'), icon: Package },
-          { id: 'users', label: t('nav.userManagement'), icon: Users },
-          { id: 'reports', label: t('nav.reports'), icon: FileText },
-        ];
-      case 'OPERATION':
-        return [
-          { id: 'dashboard', label: t('nav.operationDashboard'), icon: LayoutDashboard },
-          { id: 'vehicles', label: t('nav.availableVehicles'), icon: Car },
-          { id: 'drivers', label: t('nav.driverManagement'), icon: Users },
-        ];
-      case 'GARAGE':
-        return [
-          { id: 'dashboard', label: t('nav.garageDashboard'), icon: LayoutDashboard },
-          { id: 'vehicles', label: t('nav.vehicleInventory'), icon: Car },
-          { id: 'inventory', label: t('nav.spareParts'), icon: Package },
-          { id: 'maintenance', label: t('nav.maintenanceRequests'), icon: Wrench },
-        ];
-      case 'MAINTENANCE':
-        return [
-          { id: 'dashboard', label: t('nav.maintenanceDashboard'), icon: LayoutDashboard },
-          { id: 'maintenance', label: t('nav.maintenanceWork'), icon: Wrench },
-          { id: 'inventory', label: t('nav.partsAndMaterials'), icon: Package },
-        ];
-      default:
-        return baseItems;
-    }
-  };
-
-  const getDepartmentLabel = (department?: string): string => {
-    switch (department) {
-      case 'ADMIN': return t('departments.admin');
-      case 'OPERATION': return t('departments.operation');
-      case 'GARAGE': return t('departments.garage');
-      case 'MAINTENANCE': return t('departments.maintenance');
-      default: return t('departments.user');
-    }
-  };
-
-  const navItems = getNavItemsForDepartment(userDepartment);
-  const departmentLabel = getDepartmentLabel(userDepartment);
+  const navItems = getNavItemsForDepartment(userDepartment, t);
+  const departmentLabel = getDepartmentLabel(userDepartment, t);
 
   return (
     <aside
       className={`${
-        isOpen ? 'w-[85vw] max-w-72' : 'w-20'
-      } bg-slate-900 text-slate-400 rtl:border-l ltr:border-r border-white/5 transition-all duration-500 flex flex-col fixed inset-y-0 rtl:right-0 ltr:left-0 z-50
-      ${isMobileOpen ? 'translate-x-0' : isRTL ? 'translate-x-full' : '-translate-x-full'} lg:translate-x-0`}
+        isOpen ? 'w-72' : 'w-20'
+      } bg-slate-900 text-slate-400 rtl:border-l ltr:border-r border-white/5 transition-all duration-500 hidden lg:flex flex-col fixed inset-y-0 rtl:right-0 ltr:left-0 z-50`}
     >
       {/* Logo & Brand */}
       <div className="p-8 flex items-center justify-between mb-8">
@@ -106,19 +47,10 @@ export function Sidebar({ activeTab, setActiveTab, isOpen, setIsOpen, isMobileOp
             IV
           </span>
         )}
-        {/* Mobile Close Button */}
-        {setIsMobileOpen && (
-          <button
-            onClick={() => setIsMobileOpen(false)}
-            className="lg:hidden p-2 hover:bg-white/10 rounded-xl transition-colors"
-          >
-            <X size={20} />
-          </button>
-        )}
         {/* Desktop Collapse Button */}
         <button
           onClick={() => setIsOpen(!isOpen)}
-          className={`hidden lg:block p-2 hover:bg-white/10 rounded-xl transition-colors ${!isOpen ? 'hidden!' : ''}`}
+          className={`p-2 hover:bg-white/10 rounded-xl transition-colors ${!isOpen ? 'hidden!' : ''}`}
         >
           <CollapseIcon size={20} />
         </button>

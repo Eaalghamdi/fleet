@@ -46,7 +46,7 @@ export function Dropdown({ trigger, items }: DropdownProps) {
       </button>
 
       {isOpen && (
-        <div className="absolute left-0 top-full mt-1 w-40 bg-white rounded-xl border border-slate-200 shadow-lg py-1 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
+        <div className="absolute left-0 top-full mt-1 w-40 max-w-[calc(100vw-2rem)] bg-white rounded-xl border border-slate-200 shadow-lg py-1 z-50 animate-in fade-in slide-in-from-top-2 duration-200">
           {items.map((item, index) => (
             <button
               key={index}

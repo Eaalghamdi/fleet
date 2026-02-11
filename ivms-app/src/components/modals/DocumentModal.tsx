@@ -69,7 +69,7 @@ export function DocumentModal({ isOpen, onClose, document, onSubmit }: DocumentM
         </div>
 
         {/* Current Status */}
-        <div className="grid grid-cols-2 gap-4 text-center">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-center">
           <div className="p-3 bg-slate-50 rounded-xl">
             <p className="text-xs text-slate-400 mb-1">{t('modals.document.currentExpiryDate')}</p>
             <p className="text-sm font-bold text-slate-800">{document.expiry}</p>

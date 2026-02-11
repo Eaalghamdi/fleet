@@ -134,7 +134,7 @@ export function Inventory() {
       </header>
 
       {/* Statistics Section */}
-      <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         {[
           { label: t('pages.inventory.totalItems'), value: stats.totalItems.toLocaleString(), icon: Package, color: 'blue' },
           { label: t('pages.inventory.itemsBelowMinimum'), value: stats.lowStockItems.toString(), icon: AlertTriangle, color: 'rose' },
