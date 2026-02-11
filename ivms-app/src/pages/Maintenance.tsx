@@ -143,7 +143,7 @@ export function Maintenance() {
         {!isAdmin && (
           <button
             onClick={() => setIsAddModalOpen(true)}
-            className="bg-emerald-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-emerald-600/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
+            className="bg-emerald-600 text-white px-4 sm:px-6 py-2.5 rounded-xl text-sm font-bold flex items-center gap-2 shadow-lg shadow-emerald-600/20 hover:scale-[1.02] active:scale-[0.98] transition-all"
           >
             <Calendar size={18} /> {t('pages.maintenance.scheduleNew')}
           </button>

@@ -219,17 +219,17 @@ export function Drivers() {
                 className="w-full pr-10 pl-4 py-2.5 bg-gray-50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-all"
               />
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => setShowAdvancedSearch(!showAdvancedSearch)}
-                className={`px-4 py-2 border rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${
+                className={`px-3 sm:px-4 py-2 border rounded-xl text-sm font-medium flex items-center gap-2 transition-all ${
                   showAdvancedSearch || hasActiveFilters
                     ? 'border-emerald-300 text-emerald-700 bg-emerald-50'
                     : 'border-gray-200 text-gray-600 hover:bg-gray-50'
                 }`}
               >
                 <Filter size={16} />
-                {t('pages.drivers.advancedSearch')}
+                <span className="hidden sm:inline">{t('pages.drivers.advancedSearch')}</span>
                 {hasActiveFilters && (
                   <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
                 )}
@@ -244,9 +244,9 @@ export function Drivers() {
               </button>
               <button
                 onClick={() => setIsAddModalOpen(true)}
-                className="flex-1 sm:flex-none px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/30"
+                className="flex-1 sm:flex-none px-3 sm:px-4 py-2 bg-emerald-600 text-white rounded-xl text-sm font-medium flex items-center justify-center gap-2 hover:bg-emerald-700 transition-all shadow-lg shadow-emerald-500/30"
               >
-                <Plus size={18} /> {t('pages.drivers.registerDriver')}
+                <Plus size={18} /> <span className="hidden sm:inline">{t('pages.drivers.registerDriver')}</span><span className="sm:hidden">{t('common.add')}</span>
               </button>
             </div>
           </div>

@@ -298,7 +298,7 @@ export function UserManagement() {
         </div>
         <button
           onClick={handleOpenAddModal}
-          className="inline-flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors"
+          className="inline-flex items-center gap-2 px-4 sm:px-5 py-2.5 bg-emerald-600 text-white rounded-xl font-bold hover:bg-emerald-700 transition-colors"
         >
           <UserPlus size={18} />
           {t('pages.userManagement.addUser')}

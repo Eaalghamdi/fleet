@@ -132,7 +132,7 @@ export function ExpiryAlertsSection({ alerts, title }: ExpiryAlertsSectionProps)
         </div>
 
         {/* Status filter chips */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           {statusFilters.map(f => (
             <button
               key={f.key}
@@ -153,7 +153,7 @@ export function ExpiryAlertsSection({ alerts, title }: ExpiryAlertsSectionProps)
         </div>
 
         {/* Entity filter chips */}
-        <div className="flex items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
           {entityFilters.map(f => (
             <button
               key={f.key}

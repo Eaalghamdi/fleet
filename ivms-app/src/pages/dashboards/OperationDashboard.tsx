@@ -377,24 +377,24 @@ export function OperationDashboard() {
                 <option value="cancelled">{t('carRequestStatuses.cancelled')}</option>
               </select>
 
-              <div className="flex items-center gap-2">
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-slate-500">{t('dashboards.operation.from')}:</span>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs text-slate-500">{t('dashboards.operation.from')}</span>
                   <input
                     type="date"
                     value={dateFrom}
                     onChange={(e) => setDateFrom(e.target.value)}
-                    className="bg-white border border-slate-200 rounded-xl py-2 px-3 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                    className="bg-white border border-slate-200 rounded-xl py-2 px-3 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none w-full"
                   />
                 </div>
-                <div className="flex items-center gap-1">
-                  <span className="text-xs text-slate-500">{t('dashboards.operation.to')}:</span>
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs text-slate-500">{t('dashboards.operation.to')}</span>
                   <input
                     type="date"
                     value={dateTo}
                     onChange={(e) => setDateTo(e.target.value)}
                     min={dateFrom}
-                    className="bg-white border border-slate-200 rounded-xl py-2 px-3 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none"
+                    className="bg-white border border-slate-200 rounded-xl py-2 px-3 text-sm focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 outline-none w-full"
                   />
                 </div>
               </div>
